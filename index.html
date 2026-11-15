@@ -26,7 +26,7 @@
     -webkit-font-smoothing:antialiased;
   }
   .app{
-    max-width:720px; margin:0 auto; height:100dvh;
+    max-width:720px; margin:0 auto; height:100vh; height:100dvh;
     display:flex; flex-direction:column; position:relative; overflow:hidden;
     background:linear-gradient(180deg,#eef5f4,#e4eeec);
   }
@@ -68,7 +68,7 @@
 
   /* ── message list ── */
   main{
-    flex:1 1 auto; overflow-y:auto; overscroll-behavior:contain;
+    flex:1 1 auto; min-height:0; overflow-y:auto; overscroll-behavior:contain;
     padding:14px 12px 10px; scroll-behavior:smooth;
   }
   .day{ display:flex; justify-content:center; margin:6px 0 16px }
