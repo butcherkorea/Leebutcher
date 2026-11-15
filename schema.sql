@@ -30,3 +30,7 @@ create policy "Allow anon insert" on public.chat_messages
 
 grant select, insert on public.chat_messages to anon, authenticated;
 grant usage, select on all sequences in schema public to anon, authenticated;
+
+-- 실시간 구독(Realtime postgres_changes)을 위해 테이블을 발행 대상에 추가
+-- (이 줄이 없으면 새로고침 전까지 새 글이 안 보입니다 → 화면은 2초 폴링으로만 동작)
+alter publication supabase_realtime add table public.chat_messages;
