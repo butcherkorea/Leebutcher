@@ -516,7 +516,7 @@
         var dEl = document.createElement("div");
         dEl.className = "day";
         var s = document.createElement("span");
-        s.textContent = day + " " + timeLabel(m.createdAt).replace(/:.*/, "").replace(" ", "");
+        s.textContent = day;
         dEl.appendChild(s);
         listEl.appendChild(dEl);
         lastDay = day;
