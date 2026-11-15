@@ -721,6 +721,7 @@
     var tok = getToken();
     if (!tok) { openSettings(); toast("먼저 설정에서 GitHub 토큰을 넣어 주세요"); return; }
     var nick = getNick();
+    if (!text) return;
 
     // 낙관적 표시
     var temp = {
@@ -735,7 +736,8 @@
     state.comments.push(temp);
     state.atBottom = true;
     render();
-    var lastBubble = listEl.querySelector(".msg:last-of-type .bubble");
+    var rows = listEl.querySelectorAll(".msg .bubble");
+    var lastBubble = rows.length ? rows[rows.length - 1] : null;
     if (lastBubble) lastBubble.classList.add("pending");
     scrollBottom(true);
     setBusyUI(true);
@@ -856,9 +858,14 @@
   function submit() {
     var v = inputEl.value.replace(/\s+$/, "");
     if (!v.trim()) return;
+    hideMentions();
+    if (!getToken()) {           // 토큰이 없으면 쓴 글을 지우지 않고 설정을 연다
+      openSettings();
+      toast("먼저 설정에서 GitHub 토큰을 넣어 주세요 · 쓴 글은 그대로 두었습니다");
+      return;
+    }
     inputEl.value = "";
     autosize();
-    hideMentions();
     postComment(v);
   }
 
