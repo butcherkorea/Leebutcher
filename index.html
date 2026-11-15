@@ -311,7 +311,7 @@
     <a class="newbadge hide" id="newBadge" href="#">놓친 대화 <b id="newCount">0</b>개 ↗</a>
   </div>
 
-  <div class="tipstrip">💡 @피클 @키링 @부이 @큐 로 부른 비서만 응답합니다 (사용량 절약)</div>
+  <div class="tipstrip">💡 @피클 @키링 @부이 @큐 @인스팅트 로 부른 비서만 응답합니다 (사용량 절약)</div>
 
   <div class="banner" id="banner">
     <span id="bannerText"></span>
@@ -525,11 +525,12 @@
     "키링":  { emoji: "🔑", bg: "linear-gradient(145deg,#dff1ea,#c8e7db)", fg: "#2c6b57", role: "AI",  badge: "AI" },
     "큐":    { emoji: "🎧", bg: "linear-gradient(145deg,#e6e3fb,#d5d0f7)", fg: "#4a3f9e", role: "AI",  badge: "AI" },
     "부이":  { emoji: "🛟", bg: "linear-gradient(145deg,#dceafd,#c6dcfa)", fg: "#2c5a95", role: "AI",  badge: "AI" },
+    "인스팅트": { emoji: "⚡", bg: "linear-gradient(145deg,#fff4d6,#ffe6a8)", fg: "#8a5b00", role: "AI", badge: "AI" },
     "클로드":{ emoji: "🧡", bg: "linear-gradient(145deg,#fbe8d8,#f6d5ba)", fg: "#9c5227", role: "AI",  badge: "AI" },
     "GPT":   { emoji: "🤖", bg: "linear-gradient(145deg,#e2f0e6,#c9e6d2)", fg: "#276749", role: "AI",  badge: "AI" },
     "제미나이": { emoji: "✨", bg: "linear-gradient(145deg,#e8e6fb,#d5d1f8)", fg: "#4a3f9e", role: "AI", badge: "AI" }
   };
-  var PRESETS = ["방장", "피클", "키링", "부이", "큐"];
+  var PRESETS = ["방장", "피클", "키링", "부이", "큐", "인스팅트"];
   var FALLBACK_BG = [
     ["linear-gradient(145deg,#e3f1ec,#c9e6dc)", "#2c6b57"],
     ["linear-gradient(145deg,#fdeadd,#f7d7bc)", "#9c5227"],
@@ -571,7 +572,7 @@
   }
 
   /* ───────── 호출(@멘션) ───────── */
-  var MENTION_NAMES = ["피클", "키링", "부이", "큐", "전체"];
+  var MENTION_NAMES = ["피클", "키링", "부이", "큐", "인스팅트", "전체"];
 
   function callTargets(text) {
     var out = [];
@@ -1273,7 +1274,7 @@
   });
 
   /* 이모지 */
-  var EMOJI = ["🥒", "🍒", "✨", "😂", "👍", "🙏", "🔥", "💪", "🤖", "🎧", "🔑", "🛟", "✅", "📌", "🙂"];
+  var EMOJI = ["🥒", "🍒", "⚡", "✨", "😂", "👍", "🙏", "🔥", "💪", "🤖", "🎧", "🔑", "🛟", "✅", "📌", "🙂"];
   $("btnEmoji").addEventListener("click", function () {
     var box = $("mentions");
     box.textContent = "";
@@ -1337,7 +1338,7 @@
     }
   });
 
-  /* 빠른 호출 칩 (@피클 @키링 @부이 @큐 @전체) */
+  /* 빠른 호출 칩 (@피클 @키링 @부이 @큐 @인스팅트 @전체) */
   (function buildCallChips() {
     var strip = $("callStrip");
     MENTION_NAMES.forEach(function (n) {
