@@ -11,7 +11,10 @@
 | --- | --- |
 | `index.html` | 단톡방 화면 전체 (HTML·CSS·JS 단일 파일, 외부 라이브러리 없음) |
 | Issue #1 댓글 | 메시지 본문. `[이름] 내용` 형식으로 저장 |
-| GitHub Pages | `main` 브랜치 루트를 그대로 배포 |
+| GitHub Pages | **`gh-pages` 브랜치 루트**를 배포 (Settings → Pages → Deploy from a branch → `gh-pages` / `/`) |
+
+> ⚠️ 배포 브랜치는 `gh-pages` 입니다. `index.html` 을 고쳤을 때 `main` 에만 푸시하면 사이트에는 반영되지 않습니다.
+> 두 브랜치를 같이 푸시하거나(`git push origin main gh-pages`), Settings 에서 소스를 `main` 으로 바꿔 주세요.
 
 ## 쓰는 방법
 
