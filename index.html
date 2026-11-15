@@ -388,7 +388,7 @@
 <div class="sheet" id="settingsSheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
   <div class="panel">
     <h2 id="sheetTitle">설정</h2>
-    <p class="desc">닉네임과 방 코드만 있으면 됩니다. 이 대화는 Supabase 무료 DB(<code>chat_messages</code>)에 저장되고, 화면은 5초마다 새 글을 확인합니다.</p>
+    <p class="desc">닉네임과 방 코드만 있으면 됩니다. 이 대화는 Supabase 무료 DB(<code>chat_messages</code>)에 저장되고, 새 글은 <b>실시간</b>으로 바로 들어오며 연결이 막히면 <b>2초마다</b> 자동으로 확인합니다.</p>
 
     <div class="warnbox">
       ⚠️ <b>이 방의 글은 공개입니다.</b> 초대 링크를 아는 사람은 누구나 읽고 쓸 수 있습니다. 주소·비밀번호·계좌·연락처 같은 민감한 내용은 올리지 마세요.
@@ -435,8 +435,12 @@
   var SUPABASE_KEY = "sb_publishable__NO1HNS8YKdpsLlC-xB0xg_AWJVCLYJ"; // 공개용 키 (anon/publishable) — RLS가 읽기·쓰기만 허용
   var TABLE = "chat_messages";
   var DEFAULT_ROOM = "leebutcher";
-  var POLL_MS = 5000;           // 화면을 보고 있을 때 5초마다 확인
-  var POLL_MS_HIDDEN = 20000;   // 탭이 백그라운드일 때
+  var POLL_MS = 2000;            // 실시간 구독이 막혔을 때: 화면을 보고 있으면 2초마다 확인
+  var POLL_MS_HIDDEN = 15000;    // 탭이 백그라운드일 때
+  var POLL_MS_LIVE = 25000;      // 실시간 연결됨: 25초에 한 번만 안전 확인
+  var POLL_MS_LIVE_HIDDEN = 60000;
+  var FULL_REFRESH_MS = 60000;   // 가끔 전체 목록으로 다시 맞춤
+  var RT_WATCHDOG_MS = 45000;    // 이 시간 동안 아무 응답이 없으면 재연결
   var LIMIT = 300;              // 최근 300개
   var DASHBOARD = "https://supabase.com/dashboard/project/tfgwcjusxvqiexdbcvdl";
 
@@ -486,7 +490,26 @@
     busy: false,
     sending: false,
     seenIds: {},
-    online: true
+    online: true,
+    maxId: 0,
+    lastFull: 0,
+    unread: 0,
+    reloadQueued: false,
+    renderedDay: null,
+    lastRenderedId: null
+  };
+
+  /* 실시간 구독 상태 (Supabase Realtime · WebSocket) */
+  var rt = {
+    ws: null,
+    ref: 0,
+    joined: false,
+    dead: false,
+    connecting: false,
+    retry: 0,
+    retryTimer: null,
+    hbTimer: null,
+    lastMsgAt: 0
   };
 
   var $ = function (id) { return document.getElementById(id); };
@@ -621,30 +644,116 @@
 
   /* ───────── 렌더 ───────── */
   function normalize(list) {
-    return list.map(function (r) {
-      return {
-        id: String(r.id),
-        name: r.sender || "익명",
-        badge: r.badge || "",
-        text: r.content || "",
-        createdAt: r.created_at
-      };
-    }).sort(function (a, b) {
+    return list.map(normRow).sort(function (a, b) {
       var x = new Date(a.createdAt).getTime(), y = new Date(b.createdAt).getTime();
       if (x !== y) return x - y;
       return Number(a.id) - Number(b.id);
     });
   }
 
+  function normRow(r) {
+    return {
+      id: String(r.id),
+      name: r.sender || "익명",
+      badge: r.badge || "",
+      text: r.content || "",
+      createdAt: r.created_at
+    };
+  }
+
+  function msgRow(m, me, callIds) {
+    var row = document.createElement("div");
+    row.className = "msg";
+    row.setAttribute("data-mid", m.id);
+
+    var st = styleFor(m.name);
+    var av = document.createElement("div");
+    av.className = "avatar";
+    av.style.background = st.bg;
+    av.style.color = st.fg;
+    av.textContent = st.emoji;
+    av.setAttribute("aria-hidden", "true");
+
+    var col = document.createElement("div");
+    col.className = "col";
+
+    var who = document.createElement("div");
+    who.className = "who";
+    var nm = document.createElement("span");
+    nm.textContent = m.name;
+    who.appendChild(nm);
+    var tag = m.badge || st.badge || st.role;
+    if (tag) {
+      var tg = document.createElement("span");
+      tg.className = "tag";
+      tg.textContent = tag;
+      who.appendChild(tg);
+    }
+
+    var bub = document.createElement("div");
+    bub.className = "bubble" + (me && m.name === me ? " mine" : "") +
+      (m.pending ? " pending" : "") + (m.failed ? " failed" : "") +
+      (callIds && callIds[m.id] ? " callto" : "");
+    renderText(bub, m.text);
+
+    var meta = document.createElement("div");
+    meta.className = "meta";
+    var tm = document.createElement("span");
+    tm.textContent = m.failed ? "전송 실패" : timeLabel(m.createdAt);
+    meta.appendChild(tm);
+
+    col.appendChild(who);
+
+    var targets = callTargets(m.text);
+    if (targets.length) {
+      var cr = document.createElement("div");
+      cr.className = "callrow";
+      cr.textContent = "🔔 " + targets.join(" · ") + " 호출됨";
+      col.appendChild(cr);
+    }
+
+    col.appendChild(bub);
+    col.appendChild(meta);
+    row.appendChild(av);
+    row.appendChild(col);
+    return row;
+  }
+
+  function daySep(day) {
+    var dEl = document.createElement("div");
+    dEl.className = "day";
+    var s = document.createElement("span");
+    s.textContent = day;
+    dEl.appendChild(s);
+    return dEl;
+  }
+
+  /* 새 글 1건만 목록 끝에 붙임 (전체 다시 그리지 않음). 순서상 뒤에 올 수 없으면 false */
+  function appendRow(m, callIds) {
+    if (state.renderedDay === null) return false;
+    var day = dayLabel(m.createdAt);
+    if (day !== state.renderedDay) return false;
+    var idNum = Number(m.id), lastNum = Number(state.lastRenderedId);
+    if (!isNaN(idNum) && !isNaN(lastNum) && idNum < lastNum) return false;
+    var foot = listEl.querySelector(".notice-line");
+    var row = msgRow(m, getNick(), callIds || {});
+    if (foot) listEl.insertBefore(row, foot);
+    else listEl.appendChild(row);
+    state.lastRenderedId = m.id;
+    return true;
+  }
+
   function render() {
     var msgs = state.messages;
     listEl.textContent = "";
+    state.renderedDay = null;
+    state.lastRenderedId = null;
 
     if (state.lastSync === null) {
-      var load = document.createElement("div");
-      load.className = "empty";
-      load.innerHTML = "<b>대화를 불러오는 중…</b>";
-      listEl.appendChild(load);
+      var loadEl = document.createElement("div");
+      loadEl.className = "empty";
+      loadEl.innerHTML = "<b>대화를 불러오는 중…</b>";
+      listEl.appendChild(loadEl);
       return;
     }
     if (!msgs.length) {
@@ -667,86 +776,69 @@
     msgs.forEach(function (m) {
       var day = dayLabel(m.createdAt);
       if (day !== lastDay) {
-        var dEl = document.createElement("div");
-        dEl.className = "day";
-        var s = document.createElement("span");
-        s.textContent = day;
-        dEl.appendChild(s);
-        listEl.appendChild(dEl);
+        listEl.appendChild(daySep(day));
         lastDay = day;
       }
-
-      var row = document.createElement("div");
-      row.className = "msg";
-      row.setAttribute("data-mid", m.id);
-
-      var st = styleFor(m.name);
-      var av = document.createElement("div");
-      av.className = "avatar";
-      av.style.background = st.bg;
-      av.style.color = st.fg;
-      av.textContent = st.emoji;
-      av.setAttribute("aria-hidden", "true");
-
-      var col = document.createElement("div");
-      col.className = "col";
-
-      var who = document.createElement("div");
-      who.className = "who";
-      var nm = document.createElement("span");
-      nm.textContent = m.name;
-      who.appendChild(nm);
-      var tag = m.badge || st.badge || st.role;
-      if (tag) {
-        var tg = document.createElement("span");
-        tg.className = "tag";
-        tg.textContent = tag;
-        who.appendChild(tg);
-      }
-
-      var bub = document.createElement("div");
-      bub.className = "bubble" + (me && m.name === me ? " mine" : "") +
-        (m.pending ? " pending" : "") + (m.failed ? " failed" : "") +
-        (callIds[m.id] ? " callto" : "");
-      renderText(bub, m.text);
-
-      var meta = document.createElement("div");
-      meta.className = "meta";
-      var tm = document.createElement("span");
-      tm.textContent = m.failed ? "전송 실패" : timeLabel(m.createdAt);
-      meta.appendChild(tm);
-
-      col.appendChild(who);
-
-      var targets = callTargets(m.text);
-      if (targets.length) {
-        var cr = document.createElement("div");
-        cr.className = "callrow";
-        cr.textContent = "🔔 " + targets.join(" · ") + " 호출됨";
-        col.appendChild(cr);
-      }
-
-      col.appendChild(bub);
-      col.appendChild(meta);
-      row.appendChild(av);
-      row.appendChild(col);
-      listEl.appendChild(row);
+      listEl.appendChild(msgRow(m, me, callIds));
+      state.renderedDay = day;
+      state.lastRenderedId = m.id;
     });
 
     var foot = document.createElement("div");
     foot.className = "notice-line";
-    foot.textContent = "· 방 " + state.room + " · Supabase에 저장되는 중 ·";
+    foot.textContent = "· 방 " + state.room + (rt.joined ? " · 실시간 연결됨" : " · Supabase에 저장되는 중") + " ·";
     listEl.appendChild(foot);
 
     updateParticipants(msgs);
     if (state.atBottom) scrollBottom(false);
   }
 
+  /* 실시간으로 들어온 새 글 1건 처리 (중복은 걸러냄) */
+  function onRealtimeInsert(rec) {
+    if (!rec || rec.room_code !== state.room) return false;
+    var id = String(rec.id);
+    if (state.seenIds[id]) return false;
+    var i, exists = false;
+    for (i = 0; i < state.messages.length; i++) {
+      if (state.messages[i].id === id) { exists = true; break; }
+    }
+    if (exists) { state.seenIds[id] = 1; return false; }
+
+    var m = {
+      id: id,
+      name: rec.sender || "익명",
+      badge: rec.badge || "",
+      text: rec.content || "",
+      createdAt: rec.created_at
+    };
+    var wasBottom = state.atBottom;
+    state.messages.push(m);
+    state.seenIds[id] = 1;
+    var n = Number(id);
+    if (!isNaN(n) && n > state.maxId) state.maxId = n;
+    if (state.messages.length > LIMIT) state.messages = state.messages.slice(-LIMIT);
+
+    var calls = pendingCalls(state.messages);
+    var callIds = {};
+    calls.forEach(function (c) { callIds[c.id] = 1; });
+    updateCallBadge(calls);
+
+    if (!appendRow(m, callIds)) {
+      render();
+    } else {
+      updateParticipants(state.messages);
+      if (wasBottom) { scrollBottom(true); clearNew(); }
+      else showNew((state.unread || 0) + 1);
+    }
+    return true;
+  }
+
   function updateParticipants(msgs) {
     var set = {};
     msgs.forEach(function (m) { set[m.name] = 1; });
     var n = Object.keys(set).length;
-    $("participants").textContent = n ? ("참가자 " + n + "명") : "참가자 0명";
+    $("participants").textContent = (n ? "참가자 " + n + "명" : "참가자 0명") +
+      " · " + (rt.joined ? "실시간" : "2초 확인");
   }
 
   function scrollBottom(smooth) {
@@ -785,7 +877,11 @@
       state.messages = normalize(obj.list);
       state.lastSync = 0;
       state.seenIds = {};
-      state.messages.forEach(function (m) { state.seenIds[m.id] = 1; });
+      state.messages.forEach(function (m) {
+        state.seenIds[m.id] = 1;
+        var n = Number(m.id);
+        if (!isNaN(n) && n > state.maxId) state.maxId = n;
+      });
       render();
       scrollBottom(false);
       return true;
@@ -793,12 +889,15 @@
   }
 
   /* ───────── 불러오기 ───────── */
+  /* full = 최근 LIMIT개 전체, delta = 마지막으로 본 id 이후만 */
   function load(force) {
-    if (state.busy) return;
+    if (state.busy) { state.reloadQueued = true; return; }
     state.busy = true;
+    var delta = !force && state.lastSync !== null && state.maxId > 0;
     var url = LIST_URL + "?select=" + encodeURIComponent(COLUMNS) +
-      "&room_code=eq." + encodeURIComponent(state.room) +
-      "&order=created_at.asc&limit=" + LIMIT;
+      "&room_code=eq." + encodeURIComponent(state.room) + (delta
+        ? "&id=gt." + state.maxId + "&order=id.asc&limit=200"
+        : "&order=created_at.asc&limit=" + LIMIT);
 
     fetch(url, { headers: headers(), cache: "no-store" })
       .then(function (res) {
@@ -806,24 +905,56 @@
         return res.json();
       })
       .then(function (json) {
-        var incoming = normalize(Array.isArray(json) ? json : []);
-        var newOnes = incoming.filter(function (m) { return !state.seenIds[m.id]; });
+        var rows = Array.isArray(json) ? json : [];
+        var incoming = normalize(rows);
         var isFirst = state.lastSync === null;
+        var newOnes = incoming.filter(function (m) { return !state.seenIds[m.id]; });
 
-        // 아직 전송 중인 내 글은 서버 목록 사이에 끼워 둔다
-        var pend = state.messages.filter(function (m) { return m.pending || m.failed; });
+        if (delta) {
+          if (newOnes.length) {
+            newOnes.forEach(function (m) {
+              state.seenIds[m.id] = 1;
+              state.messages.push(m);
+              var n = Number(m.id);
+              if (!isNaN(n) && n > state.maxId) state.maxId = n;
+            });
+            if (state.messages.length > LIMIT) state.messages = state.messages.slice(-LIMIT);
 
-        state.messages = incoming.concat(pend);
+            var calls = pendingCalls(state.messages);
+            var callIds = {};
+            calls.forEach(function (c) { callIds[c.id] = 1; });
+            updateCallBadge(calls);
+
+            var okAll = true;
+            newOnes.forEach(function (m) { if (okAll) okAll = appendRow(m, callIds); });
+            if (okAll) {
+              updateParticipants(state.messages);
+              if (state.atBottom) { scrollBottom(true); clearNew(); }
+              else showNew((state.unread || 0) + newOnes.length);
+            } else {
+              render();
+            }
+          }
+        } else {
+          // 아직 전송 중인 내 글은 서버 목록 사이에 끼워 둔다
+          var pend = state.messages.filter(function (m) { return m.pending || m.failed; });
+          state.messages = incoming.concat(pend);
+          state.seenIds = {};
+          incoming.forEach(function (m) { state.seenIds[m.id] = 1; });
+          state.messages.forEach(function (m) {
+            var n = Number(m.id);
+            if (!isNaN(n) && n > state.maxId) state.maxId = n;
+          });
+          state.lastFull = Date.now();
+          if (!isFirst && newOnes.length && !state.atBottom) showNew((state.unread || 0) + newOnes.length);
+          lsSet(LS_CACHE, JSON.stringify({ at: Date.now(), room: state.room, list: rows }));
+          render();
+        }
+
         state.lastSync = Date.now();
-        state.seenIds = {};
-        incoming.forEach(function (m) { state.seenIds[m.id] = 1; });
-
-        if (!isFirst && newOnes.length && !state.atBottom) showNew(newOnes.length);
-
-        lsSet(LS_CACHE, JSON.stringify({ at: Date.now(), room: state.room, list: json }));
-        render();
         setSync(true);
         state.busy = false;
+        if (state.reloadQueued) { state.reloadQueued = false; load(false); }
       })
       .catch(function (err) {
         state.busy = false;
@@ -844,15 +975,18 @@
           "Supabase에 연결하지 못했습니다 (" + m + "). 7일 이상 사용이 없으면 무료 프로젝트가 절전 상태가 되어 첫 연결이 늦을 수 있어요. " +
           "<a href=\"" + DASHBOARD + "\" target=\"_blank\" rel=\"noopener\">프로젝트 열기 ↗</a>"
         );
+        if (state.reloadQueued) { state.reloadQueued = false; load(false); }
       });
   }
 
   function showNew(n) {
+    state.unread = n;
     $("newCount").textContent = String(n);
     $("newBadge").classList.remove("hide");
     $("jump").classList.add("show");
   }
   function clearNew() {
+    state.unread = 0;
     $("newBadge").classList.add("hide");
     $("jump").classList.remove("show");
   }
@@ -904,11 +1038,25 @@
         }
         return res.json();
       })
-      .then(function () {
+      .then(function (json) {
         state.sending = false;
         sendBtn.disabled = false;
         state.messages = state.messages.filter(function (m) { return m.id !== temp.id; });
-        load(true);
+        var row = Array.isArray(json) && json[0] ? json[0] : null;
+        if (row) {
+          var saved = normRow(row);
+          if (!state.seenIds[saved.id]) {
+            state.messages.push(saved);
+            state.seenIds[saved.id] = 1;
+            var n = Number(saved.id);
+            if (!isNaN(n) && n > state.maxId) state.maxId = n;
+          }
+          state.atBottom = true;
+          render();
+          scrollBottom(true);
+        } else {
+          load(false);
+        }
         toast("보냈습니다");
       })
       .catch(function (err) {
@@ -969,11 +1117,14 @@
       state.messages = [];
       state.lastSync = null;
       state.seenIds = {};
+      state.maxId = 0;
+      state.lastFull = 0;
       clearNew();
       render();
       load(true);
+      rtReconnect();
     } else {
-      load(true);
+      load(false);
     }
     closeGate();
     render();
@@ -1014,11 +1165,14 @@
       state.messages = [];
       state.lastSync = null;
       state.seenIds = {};
+      state.maxId = 0;
+      state.lastFull = 0;
       clearNew();
       render();
       load(true);
+      rtReconnect();
     } else {
-      load(true);
+      load(false);
     }
     render();
     ok.classList.add("show");
@@ -1221,19 +1375,178 @@
     scrollBottom(true);
   });
 
-  /* ───────── 폴링 (5초) ───────── */
+  /* ───────── 실시간 구독 (Supabase Realtime · WebSocket) ───────── */
+  var RT_URL = SUPABASE_URL.replace(/^https/, "wss") +
+    "/realtime/v1/websocket?apikey=" + encodeURIComponent(SUPABASE_KEY) + "&vsn=1.0.0";
+
+  function rtTopic() { return "aigc:" + state.room; }
+
+  function rtSend(obj) {
+    if (!rt.ws || rt.ws.readyState !== 1) return false;
+    obj.ref = String(++rt.ref);
+    try { rt.ws.send(JSON.stringify(obj)); return true; } catch (e) { return false; }
+  }
+
+  function rtJoinedUi() {
+    updateParticipants(state.messages);
+    var foot = listEl.querySelector(".notice-line");
+    if (foot) foot.textContent = "· 방 " + state.room + (rt.joined ? " · 실시간 연결됨" : " · Supabase에 저장되는 중") + " ·";
+  }
+
+  function stopHeartbeat() {
+    if (rt.hbTimer) { clearInterval(rt.hbTimer); rt.hbTimer = null; }
+  }
+
+  function startHeartbeat() {
+    stopHeartbeat();
+    rt.hbTimer = setInterval(function () {
+      if (Date.now() - rt.lastMsgAt > RT_WATCHDOG_MS) { rtClose(); rtConnect(); return; }
+      rtSend({ topic: "phoenix", event: "heartbeat", payload: {} });
+    }, 25000);
+  }
+
+  function rtJoin() {
+    rtSend({
+      topic: "realtime:" + rtTopic(),
+      event: "phx_join",
+      payload: {
+        config: {
+          broadcast: { self: false, ack: false },
+          presence: { key: "" },
+          postgres_changes: [{ event: "INSERT", schema: "public", table: TABLE }]
+        },
+        access_token: SUPABASE_KEY
+      }
+    });
+  }
+
+  function rtScheduleRetry() {
+    if (rt.dead) return;
+    clearTimeout(rt.retryTimer);
+    rt.retry = Math.min(rt.retry + 1, 6);
+    var wait = Math.min(1000 * Math.pow(2, rt.retry - 1), 20000);
+    rt.retryTimer = setTimeout(function () { rtConnect(); }, wait);
+  }
+
+  function rtClose() {
+    stopHeartbeat();
+    rt.joined = false;
+    rt.connecting = false;
+    var ws = rt.ws;
+    rt.ws = null;
+    if (ws) { try { ws.onclose = null; ws.close(); } catch (e) {} }
+    rtJoinedUi();
+  }
+
+  function rtConnect() {
+    if (rt.dead || rt.connecting) return;
+    if (rt.ws && (rt.ws.readyState === 0 || rt.ws.readyState === 1)) return;
+    if (typeof WebSocket === "undefined") { rt.dead = true; rtJoinedUi(); return; }
+    var ws;
+    rt.connecting = true;
+    try { ws = new WebSocket(RT_URL); } catch (e) { rt.connecting = false; rtScheduleRetry(); return; }
+    rt.ws = ws;
+
+    ws.onopen = function () {
+      rt.connecting = false;
+      rt.lastMsgAt = Date.now();
+      rtJoin();
+      startHeartbeat();
+    };
+
+    ws.onmessage = function (ev) {
+      rt.lastMsgAt = Date.now();
+      var msg;
+      try { msg = JSON.parse(ev.data); } catch (e) { return; }
+      if (!msg) return;
+
+      // 조인 응답
+      if (msg.event === "phx_reply" && msg.topic === "realtime:" + rtTopic()) {
+        if (msg.payload && msg.payload.status === "ok") {
+          rt.joined = true;
+          rt.retry = 0;
+          rtJoinedUi();
+          load(false);   // 구독 사이에 놓친 글이 있으면 바로 맞춤
+          schedule();
+        } else {
+          rt.dead = true;  // 이 서버/테이블은 실시간을 막아 둠 → 2초 폴링으로
+          rtClose();
+        }
+        return;
+      }
+
+      // 실제 새 글
+      if (msg.event === "postgres_changes") {
+        var d = msg.payload && msg.payload.data;
+        if (!d || d.type !== "INSERT" || !d.record) return;
+        if (d.record.room_code !== state.room) return;
+        setSync(true);
+        onRealtimeInsert(d.record);
+        return;
+      }
+
+      // 구독 거부/오류 알림
+      if (msg.event === "system" && msg.payload && msg.payload.status === "error") {
+        var t = String(msg.payload.message || "");
+        if (/Unable to subscribe|Realtime is enabled|not authorized/i.test(t)) {
+          rt.dead = true;
+          rtClose();
+        }
+        return;
+      }
+    };
+
+    ws.onerror = function () {};
+
+    ws.onclose = function () {
+      rt.connecting = false;
+      rt.joined = false;
+      rt.ws = null;
+      stopHeartbeat();
+      rtJoinedUi();
+      rtScheduleRetry();
+    };
+  }
+
+  /* 방이 바뀌면 그 방 topic으로 다시 구독 */
+  function rtReconnect() {
+    rt.dead = false;
+    rt.retry = 0;
+    clearTimeout(rt.retryTimer);
+    rtClose();
+    rtConnect();
+  }
+
+  /* ───────── 폴링 (실시간이 막혔을 때의 안전망) ───────── */
   var timer = null;
+  function pollMs() {
+    if (document.hidden) return rt.joined ? POLL_MS_LIVE_HIDDEN : POLL_MS_HIDDEN;
+    return rt.joined ? POLL_MS_LIVE : POLL_MS;
+  }
   function schedule() {
     clearTimeout(timer);
-    var ms = document.hidden ? POLL_MS_HIDDEN : POLL_MS;
     timer = setTimeout(function () {
-      load(false);
+      var force = (Date.now() - (state.lastFull || 0)) > FULL_REFRESH_MS;
+      load(force);
       schedule();
-    }, ms);
+    }, pollMs());
+  }
+
+  /* 화면으로 돌아오거나 포커스를 받으면 0초 만에 바로 확인 */
+  function refreshNow() {
+    if (document.hidden) return;
+    load(false);
+    schedule();
+    if (!rt.dead) rtConnect();
   }
   document.addEventListener("visibilitychange", function () {
-    if (!document.hidden) { load(false); schedule(); }
+    if (!document.hidden) refreshNow();
+    else schedule();
   });
+  window.addEventListener("focus", refreshNow);
+  window.addEventListener("pageshow", refreshNow);
+  window.addEventListener("online", function () { rt.retry = 0; refreshNow(); });
+  window.addEventListener("offline", function () { setSync(false); });
 
   /* ───────── 시작 ───────── */
   setRoom(state.room);
@@ -1242,6 +1555,7 @@
   if (!hadCache) render();
   load(true);
   schedule();
+  rtConnect();
   if (!getNick()) openGate();
 })();
 </script>
