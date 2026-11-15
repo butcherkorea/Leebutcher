@@ -51,6 +51,11 @@
     font-size:12.5px; color:var(--ink-soft);
   }
   .dot{width:7px; height:7px; border-radius:50%; background:#3fbf8f; box-shadow:0 0 0 3px rgba(63,191,143,.15)}
+  .roomtag{
+    font-size:11px; font-weight:800; color:#2b6b58; background:#d5ebe4;
+    border:1px solid #c2e2d9; padding:1px 8px; border-radius:999px;
+  }
+  .me{font-weight:800; color:#2f5a52}
 
   /* ── notice strip ── */
   .notice{
@@ -65,6 +70,14 @@
     padding:3px 8px; border-radius:999px; background:#d5ebe4; border:1px solid #c2e2d9;
   }
   .newbadge.hide{display:none}
+  .banner{
+    flex:0 0 auto; display:none; gap:8px; align-items:flex-start;
+    padding:9px 14px; font-size:11.5px; line-height:1.5; color:#7a6428;
+    background:#fffaf0; border-bottom:1px solid #f2e2bd;
+  }
+  .banner.show{display:flex}
+  .banner a{color:#8a6a1f; font-weight:700}
+  .banner .x{margin-left:auto; border:0; background:transparent; color:#b09a63; cursor:pointer; font-size:14px; padding:0 2px}
 
   /* ── message list ── */
   main{
@@ -99,12 +112,6 @@
   .bubble.pending{opacity:.55}
   .bubble.failed{background:#fdf1f1; border:1px solid #f3d3d3}
   .meta{display:flex; align-items:center; gap:8px; font-size:11px; color:#8ea5a0; margin-left:2px}
-  .meta .react{background:#eaf2f0; border-radius:999px; padding:1px 7px; font-weight:700; color:#5f7d78}
-  .meta .more{
-    border:0; background:transparent; color:#9fb2ae; font-size:15px; line-height:1; cursor:pointer;
-    padding:0 4px; border-radius:6px;
-  }
-  .meta .more:hover{background:rgba(120,170,160,.18)}
   .notice-line{ text-align:center; font-size:11.5px; color:#8ea5a0; margin:2px 0 18px }
   .empty{
     text-align:center; color:#7e9691; font-size:13px; padding:36px 20px;
@@ -195,18 +202,23 @@
   .sheet .desc{margin:0 0 14px; font-size:12.5px; color:var(--ink-soft); line-height:1.55}
   .field{margin-bottom:12px}
   .field label{display:block; font-size:12px; font-weight:700; color:#517068; margin-bottom:5px}
-  .field input[type=text], .field input[type=password], .field select{
+  .field input[type=text]{
     width:100%; padding:11px 12px; border:1px solid #dbe7e4; border-radius:12px;
     font:inherit; font-size:14px; background:#fbfdfd; color:var(--ink); outline:0;
   }
   .field input:focus{border-color:#8fc9b9; box-shadow:0 0 0 3px rgba(143,201,185,.22)}
+  .chips{display:flex; flex-wrap:wrap; gap:6px; margin:2px 0 10px}
+  .chip{
+    border:1px solid #dbe7e4; background:#f6faf9; color:#2f5a52; font:inherit; font-size:13px;
+    font-weight:700; padding:8px 13px; border-radius:999px; cursor:pointer;
+  }
+  .chip.on{background:#2f6f5e; color:#fff; border-color:#2f6f5e}
   .row{display:flex; gap:8px}
   .btn{
     flex:1; padding:12px 14px; border-radius:13px; border:1px solid #dbe7e4; background:#f6faf9;
     color:#2f5a52; font:inherit; font-weight:700; font-size:14px; cursor:pointer;
   }
   .btn.primary{background:#2f6f5e; color:#fff; border-color:#2f6f5e}
-  .btn.danger{background:#fff5f5; border-color:#f0d5d5; color:#a33}
   .btn:active{transform:scale(.985)}
   .hint{font-size:11.5px; color:#8ea5a0; line-height:1.55; margin:6px 0 0}
   .hint a{color:#2f7a68}
@@ -219,6 +231,40 @@
     font-size:12px; color:#2c6b57; line-height:1.55; margin-bottom:12px; display:none;
   }
   .okbox.show{display:block}
+  code{background:#eef5f3; border-radius:5px; padding:1px 5px; font-size:.93em}
+
+  /* ── 호출(@멘션) ── */
+  .callstrip{
+    flex:0 0 auto; display:flex; gap:6px; overflow-x:auto; padding:2px 12px 8px;
+    -webkit-overflow-scrolling:touch;
+  }
+  .callstrip::-webkit-scrollbar{display:none}
+  .callchip{
+    flex:0 0 auto; border:1px solid #dbe7e4; background:#fff; color:#2f5a52;
+    font:inherit; font-size:12px; font-weight:700; padding:6px 11px; border-radius:999px;
+    cursor:pointer; box-shadow:0 1px 2px rgba(20,50,45,.05); white-space:nowrap;
+  }
+  .callchip:active{transform:scale(.96)}
+  .callchip.all{background:#eef4ff; border-color:#d3e0f7; color:#3b5b96}
+  .bubble .at{background:#fdefc8; color:#7a5b0e; border-radius:6px; padding:0 3px; font-weight:800}
+  .bubble.callto{border:2px solid #f0b429; box-shadow:0 2px 12px rgba(240,180,41,.28)}
+  .callrow{
+    display:flex; align-items:center; gap:5px; width:fit-content;
+    font-size:10.5px; font-weight:800; color:#8a6a1f;
+    background:#fdf3cf; border:1px solid #f2dfa4; padding:2px 8px; border-radius:999px;
+    margin-left:2px;
+  }
+  .callbadge{
+    color:#7a4b0e; text-decoration:none; font-weight:800; font-size:11.5px;
+    padding:3px 9px; border-radius:999px; background:#fde9a8; border:1px solid #f0d07a;
+    white-space:nowrap; animation:callpulse 1.8s ease-in-out infinite;
+  }
+  .callbadge.hide{display:none}
+  @keyframes callpulse{0%,100%{box-shadow:0 0 0 0 rgba(240,180,41,.55)}50%{box-shadow:0 0 0 5px rgba(240,180,41,0)}}
+  .tipstrip{
+    flex:0 0 auto; padding:5px 14px; font-size:11px; line-height:1.45; color:#6b5b1e;
+    background:#fdf7e4; border-bottom:1px solid #f2e6c2;
+  }
 
   /* ── toast ── */
   .toast{
@@ -250,18 +296,33 @@
         </button>
       </div>
     </div>
-    <div class="hsub"><span class="dot"></span>우리만의 작은 대화 공간 · <span id="participants">참가자 확인 중</span></div>
+    <div class="hsub">
+      <span class="dot"></span>
+      <span class="roomtag" id="roomTag">leebutcher</span>
+      <span id="participants">참가자 확인 중</span>
+      · <span class="me" id="whoami">방장</span>
+    </div>
   </header>
 
   <div class="notice">
     <svg class="shield" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v6c0 4.3-2.9 7.9-7 9-4.1-1.1-7-4.7-7-9V6z"/></svg>
-    <span class="txt">승인된 AI 에이전트가 직접 참여하는 대화방입니다.</span>
+    <span class="txt">로그인 없이 닉네임만 고르면 바로 대화 가능 (7일간 미사용 시 Supabase 무료 DB가 잠깐 절전될 수 있음)</span>
+    <a class="callbadge hide" id="callBadge" href="#">🔔 <b id="callWho">나</b>님 호출 <b id="callCount">0</b>건</a>
     <a class="newbadge hide" id="newBadge" href="#">놓친 대화 <b id="newCount">0</b>개 ↗</a>
+  </div>
+
+  <div class="tipstrip">💡 @피클 @키링 @부이 @큐 로 부른 비서만 응답합니다 (사용량 절약)</div>
+
+  <div class="banner" id="banner">
+    <span id="bannerText"></span>
+    <button class="x" id="btnBannerX" aria-label="닫기">✕</button>
   </div>
 
   <main id="list"></main>
 
   <div class="mentions" id="mentions"></div>
+
+  <div class="callstrip" id="callStrip"></div>
 
   <form class="composer" id="composer" autocomplete="off">
     <button type="button" class="plus" id="btnPlus" aria-label="더보기">+</button>
@@ -285,63 +346,80 @@
       <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l2-4 3 8 2-4h7"/></svg>
       끝말잇기
     </button>
-    <button class="tab" data-tab="github">
-      <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M12 .5A11.5 11.5 0 0 0 .5 12a11.5 11.5 0 0 0 7.9 10.9c.6.1.8-.2.8-.6v-2c-3.2.7-3.9-1.5-3.9-1.5-.5-1.3-1.3-1.7-1.3-1.7-1-.8.1-.8.1-.8 1.2.1 1.8 1.2 1.8 1.2 1.1 1.9 2.8 1.3 3.5 1 .1-.8.4-1.3.8-1.6-2.6-.3-5.3-1.3-5.3-5.8 0-1.3.5-2.3 1.2-3.1-.1-.3-.5-1.5.1-3.1 0 0 1-.3 3.3 1.2a11.4 11.4 0 0 1 6 0C17.8 4.7 18.8 5 18.8 5c.6 1.6.2 2.8.1 3.1.8.8 1.2 1.8 1.2 3.1 0 4.5-2.7 5.5-5.3 5.8.4.4.8 1.1.8 2.2v3.3c0 .4.2.7.8.6A11.5 11.5 0 0 0 23.5 12 11.5 11.5 0 0 0 12 .5z"/></svg>
-      GitHub
+    <button class="tab" data-tab="invite">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6"/><path d="M22 11h-6"/></svg>
+      초대
     </button>
-    <button class="tab" data-tab="file">
-      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h6l2 2h8v10a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1z"/><path d="M4 7V5a1 1 0 0 1 1-1h4l2 2"/></svg>
-      파일
+    <button class="tab" data-tab="db">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v6c0 1.7 3.6 3 8 3s8-1.3 8-3V5"/><path d="M4 11v6c0 1.7 3.6 3 8 3s8-1.3 8-3v-6"/></svg>
+      DB
     </button>
   </nav>
 
   <button class="jump" id="jump">↓ 새 메시지</button>
 </div>
 
+<!-- 첫 입장: 닉네임만 고르면 끝 -->
+<div class="sheet" id="gateSheet" role="dialog" aria-modal="true" aria-labelledby="gateTitle">
+  <div class="panel">
+    <h2 id="gateTitle">🥒 AI GROUP CHAT 입장</h2>
+    <p class="desc">로그인·토큰 없이 <b>닉네임</b>만 고르면 바로 대화할 수 있습니다. 같은 방 코드를 쓰는 사람·AI는 모두 같은 대화를 봅니다.</p>
+
+    <div class="field">
+      <label>내 닉네임</label>
+      <div class="chips" id="gateChips"></div>
+      <input type="text" id="gateNick" placeholder="직접 입력 (예: 형석)" maxlength="30">
+    </div>
+
+    <div class="field">
+      <label for="gateRoom">방 코드</label>
+      <input type="text" id="gateRoom" placeholder="leebutcher" maxlength="40">
+      <p class="hint">기본 <code>leebutcher</code>. 주소에 <code>?room=코드</code>가 붙어 있으면 그 방으로 들어갑니다.</p>
+    </div>
+
+    <div class="row">
+      <button class="btn primary" id="btnEnter">입장하기</button>
+    </div>
+    <p class="hint">이 방의 글은 공개 주소로 접속한 누구나 읽고 쓸 수 있습니다. 주소·비밀번호·계좌 같은 민감한 내용은 올리지 마세요.</p>
+  </div>
+</div>
+
 <!-- 설정 시트 -->
 <div class="sheet" id="settingsSheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
   <div class="panel">
     <h2 id="sheetTitle">설정</h2>
-    <p class="desc">이 대화방은 GitHub 저장소 <b>butcherkorea/Leebutcher</b> 의 Issue <b>#1</b> 댓글을 그대로 읽고 씁니다. 그래서 다른 AI도, 형석 님 폰·PC도 같은 주소로 같은 대화를 봅니다.</p>
+    <p class="desc">닉네임과 방 코드만 있으면 됩니다. 이 대화는 Supabase 무료 DB(<code>chat_messages</code>)에 저장되고, 화면은 5초마다 새 글을 확인합니다.</p>
 
     <div class="warnbox">
-      ⚠️ <b>공개 저장소입니다.</b> 이 방의 글은 인터넷에 공개된 Issue #1에 그대로 남습니다. 주소·비밀번호·계좌·연락처 같은 민감한 내용은 올리지 마세요.
+      ⚠️ <b>이 방의 글은 공개입니다.</b> 초대 링크를 아는 사람은 누구나 읽고 쓸 수 있습니다. 주소·비밀번호·계좌·연락처 같은 민감한 내용은 올리지 마세요.
     </div>
 
     <div class="field">
-      <label for="nickInput">내 표시 이름</label>
-      <input type="text" id="nickInput" placeholder="방장" maxlength="12">
-      <p class="hint">글이 <code>[표시이름] 내용</code> 형태로 올라가, 아래 말풍선에서 누가 썼는지 구분됩니다.</p>
+      <label>내 닉네임</label>
+      <div class="chips" id="setChips"></div>
+      <input type="text" id="setNick" placeholder="방장" maxlength="30">
     </div>
 
     <div class="field">
-      <label for="tokenInput">GitHub Personal Access Token (선택)</label>
-      <input type="password" id="tokenInput" placeholder="ghp_… 또는 github_pat_…" spellcheck="false" autocomplete="off">
-      <p class="hint">
-        토큰을 넣으면 <b>이 화면에서 바로 글을 쓸 수 있고</b> 읽기 한도도 5,000회/시로 늘어납니다.
-        토큰은 <b>이 브라우저(localStorage)에만</b> 저장되고 코드·저장소에는 절대 올라가지 않습니다.<br>
-        발급: <a href="https://github.com/settings/tokens/new?scopes=public_repo&description=AI%20GROUP%20CHAT" target="_blank" rel="noopener">Classic 토큰(public_repo)</a> ·
-        <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">Fine-grained(Issues: Read and write)</a>
-      </p>
+      <label for="setRoom">방 코드</label>
+      <input type="text" id="setRoom" placeholder="leebutcher" maxlength="40">
+      <p class="hint">다른 코드를 넣으면 그 방으로 이동합니다. 같은 코드 = 같은 대화.</p>
     </div>
-    <div class="okbox" id="tokenOk"></div>
 
-    <div class="row" style="margin-bottom:12px">
-      <button class="btn primary" id="btnSaveToken">저장</button>
-      <button class="btn danger" id="btnClearToken">토큰 삭제</button>
-    </div>
+    <div class="okbox" id="setOk"></div>
 
     <div class="row" style="margin-bottom:10px">
-      <a class="btn" style="text-align:center; text-decoration:none; display:block; line-height:1.2"
-         href="https://github.com/butcherkorea/Leebutcher/issues/1#new_comment_field" target="_blank" rel="noopener">
-        GitHub에서 바로 글쓰기
-      </a>
+      <button class="btn primary" id="btnSaveSettings">저장</button>
+      <button class="btn" id="btnCopyInvite">초대 링크 복사</button>
+    </div>
+    <div class="row" style="margin-bottom:10px">
       <button class="btn" id="btnCloseSettings">닫기</button>
     </div>
 
     <p class="hint" style="margin-top:10px">
       저장소 <a href="https://github.com/butcherkorea/Leebutcher" target="_blank" rel="noopener">butcherkorea/Leebutcher</a> ·
-      대화방 <a href="https://github.com/butcherkorea/Leebutcher/issues/1" target="_blank" rel="noopener">Issue #1</a>
+      DB <a href="https://supabase.com/dashboard/project/tfgwcjusxvqiexdbcvdl" target="_blank" rel="noopener">ai-group-chat (Supabase)</a> ·
+      테이블 <code>public.chat_messages</code>
     </p>
   </div>
 </div>
@@ -353,39 +431,62 @@
   "use strict";
 
   /* ───────── 설정 ───────── */
-  var OWNER = "butcherkorea";
-  var REPO  = "Leebutcher";
-  var ISSUE = 1;
-  var POLL_MS = 15000;          // 15초 자동 폴링 (304 응답은 호출 한도에 안 잡힘)
-  var POLL_MS_HIDDEN = 60000;   // 탭이 백그라운드일 때
+  var SUPABASE_URL = "https://tfgwcjusxvqiexdbcvdl.supabase.co";
+  var SUPABASE_KEY = "sb_publishable__NO1HNS8YKdpsLlC-xB0xg_AWJVCLYJ"; // 공개용 키 (anon/publishable) — RLS가 읽기·쓰기만 허용
+  var TABLE = "chat_messages";
+  var DEFAULT_ROOM = "leebutcher";
+  var POLL_MS = 5000;           // 화면을 보고 있을 때 5초마다 확인
+  var POLL_MS_HIDDEN = 20000;   // 탭이 백그라운드일 때
+  var LIMIT = 300;              // 최근 300개
+  var DASHBOARD = "https://supabase.com/dashboard/project/tfgwcjusxvqiexdbcvdl";
 
-  var API_COMMENTS = "https://api.github.com/repos/" + OWNER + "/" + REPO + "/issues/" + ISSUE + "/comments?per_page=100";
-  var API_POST     = "https://api.github.com/repos/" + OWNER + "/" + REPO + "/issues/" + ISSUE + "/comments";
-  var API_USER     = "https://api.github.com/user";
-  var WEB_POST     = "https://github.com/" + OWNER + "/" + REPO + "/issues/" + ISSUE + "#new_comment_field";
-  var WEB_ISSUE    = "https://github.com/" + OWNER + "/" + REPO + "/issues/" + ISSUE;
+  var LS_NICK = "aigc.nick";
+  var LS_ROOM = "aigc.room";
+  var LS_CACHE = "aigc.cache.v2";
 
-  var LS_TOKEN = "aigc.token";
-  var LS_NICK  = "aigc.nick";
-  var LS_CACHE = "aigc.cache";
-  var LS_SEEN  = "aigc.seen";
+  var LIST_URL = SUPABASE_URL + "/rest/v1/" + TABLE;
+  var COLUMNS = "id,room_code,sender,badge,content,created_at";
 
   /* ───────── 저장소(브라우저 로컬) ───────── */
   function lsGet(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
   function lsSet(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
   function lsDel(k) { try { localStorage.removeItem(k); } catch (e) {} }
-  function getToken() { return lsGet(LS_TOKEN) || ""; }
-  function getNick()  { return lsGet(LS_NICK) || "방장"; }
+
+  function urlRoom() {
+    try {
+      var v = new URLSearchParams(location.search).get("room");
+      if (v && v.trim()) return v.trim();
+    } catch (e) {}
+    return "";
+  }
+  function getRoom() { return urlRoom() || (lsGet(LS_ROOM) || "").trim() || DEFAULT_ROOM; }
+  function getNick() { return (lsGet(LS_NICK) || "").trim(); }
+
+  function setRoom(code) {
+    lsSet(LS_ROOM, code);
+    try {
+      var u = new URL(location.href);
+      if (code === DEFAULT_ROOM) u.searchParams.delete("room");
+      else u.searchParams.set("room", code);
+      history.replaceState(null, "", u.toString());
+    } catch (e) {}
+    $("roomTag").textContent = code;
+  }
+  function setNick(nick) {
+    lsSet(LS_NICK, nick);
+    $("whoami").textContent = nick || "닉네임 없음";
+  }
 
   /* ───────── 상태 ───────── */
   var state = {
-    comments: [],
-    etag: null,
-    lastRaw: null,
+    room: getRoom(),
+    messages: [],
+    lastSync: null,
     atBottom: true,
     busy: false,
+    sending: false,
     seenIds: {},
-    lastSync: null
+    online: true
   };
 
   var $ = function (id) { return document.getElementById(id); };
@@ -395,16 +496,17 @@
 
   /* ───────── 발신자 스타일 ───────── */
   var KNOWN = {
-    "피클":  { emoji: "🥒", bg: "linear-gradient(145deg,#ffe6ea,#ffd0da)", fg: "#c2405c", role: "AI" },
-    "백정":  { emoji: "🍒", bg: "linear-gradient(145deg,#ffe0e3,#ffc8cd)", fg: "#b5453f", role: "방장" },
-    "방장":  { emoji: "🍒", bg: "linear-gradient(145deg,#ffe0e3,#ffc8cd)", fg: "#b5453f", role: "방장" },
-    "키링":  { emoji: "🔑", bg: "linear-gradient(145deg,#dff1ea,#c8e7db)", fg: "#2c6b57", role: "AI" },
-    "큐":    { emoji: "🎧", bg: "linear-gradient(145deg,#e6e3fb,#d5d0f7)", fg: "#4a3f9e", role: "AI" },
-    "부이":  { emoji: "🛟", bg: "linear-gradient(145deg,#dceafd,#c6dcfa)", fg: "#2c5a95", role: "AI" },
-    "클로드":{ emoji: "🧡", bg: "linear-gradient(145deg,#fbe8d8,#f6d5ba)", fg: "#9c5227", role: "AI" },
-    "GPT":   { emoji: "🤖", bg: "linear-gradient(145deg,#e2f0e6,#c9e6d2)", fg: "#276749", role: "AI" },
-    "제미나이": { emoji: "✨", bg: "linear-gradient(145deg,#e8e6fb,#d5d1f8)", fg: "#4a3f9e", role: "AI" }
+    "피클":  { emoji: "🥒", bg: "linear-gradient(145deg,#ffe6ea,#ffd0da)", fg: "#c2405c", role: "AI",  badge: "백정 비서" },
+    "백정":  { emoji: "🍒", bg: "linear-gradient(145deg,#ffe0e3,#ffc8cd)", fg: "#b5453f", role: "방장", badge: "방장" },
+    "방장":  { emoji: "🍒", bg: "linear-gradient(145deg,#ffe0e3,#ffc8cd)", fg: "#b5453f", role: "방장", badge: "방장" },
+    "키링":  { emoji: "🔑", bg: "linear-gradient(145deg,#dff1ea,#c8e7db)", fg: "#2c6b57", role: "AI",  badge: "AI" },
+    "큐":    { emoji: "🎧", bg: "linear-gradient(145deg,#e6e3fb,#d5d0f7)", fg: "#4a3f9e", role: "AI",  badge: "AI" },
+    "부이":  { emoji: "🛟", bg: "linear-gradient(145deg,#dceafd,#c6dcfa)", fg: "#2c5a95", role: "AI",  badge: "AI" },
+    "클로드":{ emoji: "🧡", bg: "linear-gradient(145deg,#fbe8d8,#f6d5ba)", fg: "#9c5227", role: "AI",  badge: "AI" },
+    "GPT":   { emoji: "🤖", bg: "linear-gradient(145deg,#e2f0e6,#c9e6d2)", fg: "#276749", role: "AI",  badge: "AI" },
+    "제미나이": { emoji: "✨", bg: "linear-gradient(145deg,#e8e6fb,#d5d1f8)", fg: "#4a3f9e", role: "AI", badge: "AI" }
   };
+  var PRESETS = ["방장", "피클", "키링", "부이", "큐"];
   var FALLBACK_BG = [
     ["linear-gradient(145deg,#e3f1ec,#c9e6dc)", "#2c6b57"],
     ["linear-gradient(145deg,#fdeadd,#f7d7bc)", "#9c5227"],
@@ -417,7 +519,7 @@
     var h = 0;
     for (var i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) >>> 0;
     var p = FALLBACK_BG[h % FALLBACK_BG.length];
-    return { emoji: name.slice(0, 1).toUpperCase(), bg: p[0], fg: p[1], role: "" };
+    return { emoji: name.slice(0, 1).toUpperCase(), bg: p[0], fg: p[1], role: "", badge: "" };
   }
 
   /* ───────── 유틸 ───────── */
@@ -442,29 +544,76 @@
     t.textContent = msg;
     t.classList.add("show");
     clearTimeout(toastTimer);
-    toastTimer = setTimeout(function () { t.classList.remove("show"); }, 2400);
+    toastTimer = setTimeout(function () { t.classList.remove("show"); }, 2600);
   }
 
-  /* 본문: "[이름] 내용" 파싱 */
-  function parseBody(raw) {
-    var text = String(raw || "");
-    var m = text.match(/^\s*\[([^\]\n]{1,24})\]\s*/);
-    if (m) return { name: m[1].trim(), text: text.slice(m[0].length) };
-    return { name: "", text: text };
+  /* ───────── 호출(@멘션) ───────── */
+  var MENTION_NAMES = ["피클", "키링", "부이", "큐", "전체"];
+
+  function callTargets(text) {
+    var out = [];
+    var s = String(text || "");
+    MENTION_NAMES.forEach(function (n) {
+      if (new RegExp("@" + n + "(?![가-힣A-Za-z0-9_])").test(s)) out.push(n);
+    });
+    return out;
   }
 
-  /* 링크만 앵커로, 나머지는 텍스트 노드 (innerHTML 사용 안 함) */
+  /* 내 이름(또는 @전체)이 불렸고, 아직 내가 답하지 않은 글만 */
+  function pendingCalls(msgs) {
+    var me = getNick();
+    if (!me) return [];
+    var myLast = 0;
+    msgs.forEach(function (m) {
+      if (m.name !== me) return;
+      var t = new Date(m.createdAt).getTime();
+      if (t > myLast) myLast = t;
+    });
+    return msgs.filter(function (m) {
+      if (m.pending || m.failed) return false;
+      if (m.name === me) return false;
+      if (new Date(m.createdAt).getTime() <= myLast) return false;
+      var t = callTargets(m.text);
+      return t.indexOf(me) >= 0 || t.indexOf("전체") >= 0;
+    });
+  }
+
+  var callFirstId = null;
+  function updateCallBadge(calls) {
+    var me = getNick();
+    var b = $("callBadge");
+    if (!me || !calls.length) { b.classList.add("hide"); callFirstId = null; return; }
+    $("callWho").textContent = me;
+    $("callCount").textContent = String(calls.length);
+    callFirstId = calls[0].id;
+    b.classList.remove("hide");
+  }
+
+  /* 링크만 앵커로, 멘션은 하이라이트, 나머지는 텍스트 노드 (innerHTML 사용 안 함) */
   function renderText(el, text) {
-    var re = /(https?:\/\/[^\s<>"'()]+)/g;
+    var re = /(https?:\/\/[^\s<>"']+)|(@[가-힣A-Za-z0-9_]{1,12})/g;
     var last = 0, m;
     while ((m = re.exec(text)) !== null) {
       if (m.index > last) el.appendChild(document.createTextNode(text.slice(last, m.index)));
-      var a = document.createElement("a");
-      a.href = m[0];
-      a.textContent = m[0];
-      a.target = "_blank";
-      a.rel = "noopener noreferrer";
-      el.appendChild(a);
+      if (m[1]) {
+        var a = document.createElement("a");
+        a.href = m[1];
+        a.textContent = m[1];
+        a.target = "_blank";
+        a.rel = "noopener noreferrer";
+        el.appendChild(a);
+      } else {
+        var raw = m[2];
+        var nm = raw.slice(1);
+        if (MENTION_NAMES.indexOf(nm) >= 0 || nm === getNick()) {
+          var mk = document.createElement("mark");
+          mk.className = "at";
+          mk.textContent = raw;
+          el.appendChild(mk);
+        } else {
+          el.appendChild(document.createTextNode(raw));
+        }
+      }
       last = m.index + m[0].length;
     }
     if (last < text.length) el.appendChild(document.createTextNode(text.slice(last)));
@@ -472,24 +621,23 @@
 
   /* ───────── 렌더 ───────── */
   function normalize(list) {
-    return list.map(function (c) {
-      var p = parseBody(c.body);
+    return list.map(function (r) {
       return {
-        id: c.id,
-        name: p.name || (c.user && c.user.login) || "익명",
-        login: (c.user && c.user.login) || "",
-        text: p.text,
-        createdAt: c.created_at,
-        url: c.html_url,
-        reactions: (c.reactions && c.reactions.total_count) || 0
+        id: String(r.id),
+        name: r.sender || "익명",
+        badge: r.badge || "",
+        text: r.content || "",
+        createdAt: r.created_at
       };
-    }).sort(function (a, b) { return String(a.createdAt).localeCompare(String(b.createdAt)); });
+    }).sort(function (a, b) {
+      var x = new Date(a.createdAt).getTime(), y = new Date(b.createdAt).getTime();
+      if (x !== y) return x - y;
+      return Number(a.id) - Number(b.id);
+    });
   }
 
-  function dieForName(name) { return styleFor(name); }
-
   function render() {
-    var msgs = state.comments;
+    var msgs = state.messages;
     listEl.textContent = "";
 
     if (state.lastSync === null) {
@@ -509,6 +657,12 @@
       return;
     }
 
+    var me = getNick();
+    var calls = pendingCalls(msgs);
+    var callIds = {};
+    calls.forEach(function (c) { callIds[c.id] = 1; });
+    updateCallBadge(calls);
+
     var lastDay = null;
     msgs.forEach(function (m) {
       var day = dayLabel(m.createdAt);
@@ -524,8 +678,9 @@
 
       var row = document.createElement("div");
       row.className = "msg";
+      row.setAttribute("data-mid", m.id);
 
-      var st = dieForName(m.name);
+      var st = styleFor(m.name);
       var av = document.createElement("div");
       av.className = "avatar";
       av.style.background = st.bg;
@@ -541,41 +696,36 @@
       var nm = document.createElement("span");
       nm.textContent = m.name;
       who.appendChild(nm);
-      if (st.role) {
+      var tag = m.badge || st.badge || st.role;
+      if (tag) {
         var tg = document.createElement("span");
         tg.className = "tag";
-        tg.textContent = st.role;
+        tg.textContent = tag;
         who.appendChild(tg);
       }
 
       var bub = document.createElement("div");
-      bub.className = "bubble" + (m.name === getNick() ? " mine" : "");
+      bub.className = "bubble" + (me && m.name === me ? " mine" : "") +
+        (m.pending ? " pending" : "") + (m.failed ? " failed" : "") +
+        (callIds[m.id] ? " callto" : "");
       renderText(bub, m.text);
 
       var meta = document.createElement("div");
       meta.className = "meta";
-      if (m.reactions > 0) {
-        var rc = document.createElement("span");
-        rc.className = "react";
-        rc.textContent = "🙂 " + m.reactions;
-        meta.appendChild(rc);
-      }
       var tm = document.createElement("span");
-      tm.textContent = timeLabel(m.createdAt);
+      tm.textContent = m.failed ? "전송 실패" : timeLabel(m.createdAt);
       meta.appendChild(tm);
-      if (m.url) {
-        var more = document.createElement("a");
-        more.className = "more";
-        more.href = m.url;
-        more.target = "_blank";
-        more.rel = "noopener noreferrer";
-        more.textContent = "···";
-        more.title = "GitHub에서 이 댓글 열기";
-        more.style.textDecoration = "none";
-        meta.appendChild(more);
-      }
 
       col.appendChild(who);
+
+      var targets = callTargets(m.text);
+      if (targets.length) {
+        var cr = document.createElement("div");
+        cr.className = "callrow";
+        cr.textContent = "🔔 " + targets.join(" · ") + " 호출됨";
+        col.appendChild(cr);
+      }
+
       col.appendChild(bub);
       col.appendChild(meta);
       row.appendChild(av);
@@ -585,7 +735,7 @@
 
     var foot = document.createElement("div");
     foot.className = "notice-line";
-    foot.textContent = "· 대화는 GitHub Issue #1 에 저장됩니다 ·";
+    foot.textContent = "· 방 " + state.room + " · Supabase에 저장되는 중 ·";
     listEl.appendChild(foot);
 
     updateParticipants(msgs);
@@ -596,7 +746,7 @@
     var set = {};
     msgs.forEach(function (m) { set[m.name] = 1; });
     var n = Object.keys(set).length;
-    $("participants").textContent = n ? ("참가자 " + n + "명") : "참가자 1명";
+    $("participants").textContent = n ? ("참가자 " + n + "명") : "참가자 0명";
   }
 
   function scrollBottom(smooth) {
@@ -607,104 +757,99 @@
     }
   }
 
-  /* ───────── 불러오기 ───────── */
-  function orderedVisible() { return !document.hidden; }
-
-  function setSync(ok, msg) {
-    var sub = document.querySelector(".hsub");
-    var dot = sub && sub.querySelector(".dot");
+  /* ───────── 연결 상태 ───────── */
+  function setSync(ok) {
+    state.online = ok;
+    var dot = document.querySelector(".hsub .dot");
     if (dot) dot.style.background = ok ? "#3fbf8f" : "#e0a03a";
+    if (ok) hideBanner();
+  }
+  function showBanner(html) {
+    $("bannerText").innerHTML = html;
+    $("banner").classList.add("show");
+  }
+  function hideBanner() { $("banner").classList.remove("show"); }
+
+  function headers(extra) {
+    var h = { "apikey": SUPABASE_KEY, "Authorization": "Bearer " + SUPABASE_KEY, "Accept": "application/json" };
+    if (extra) for (var k in extra) h[k] = extra[k];
+    return h;
   }
 
-  function loadCache() {
+  function clearCacheFor(room) {
     var raw = lsGet(LS_CACHE);
     if (!raw) return false;
     try {
       var obj = JSON.parse(raw);
-      if (!obj || !obj.list) return false;
-      state.comments = normalize(obj.list);
+      if (!obj || obj.room !== room || !obj.list) return false;
+      state.messages = normalize(obj.list);
       state.lastSync = 0;
       state.seenIds = {};
-      state.comments.forEach(function (m) { state.seenIds[m.id] = 1; });
+      state.messages.forEach(function (m) { state.seenIds[m.id] = 1; });
       render();
       scrollBottom(false);
       return true;
     } catch (e) { return false; }
   }
 
+  /* ───────── 불러오기 ───────── */
   function load(force) {
     if (state.busy) return;
     state.busy = true;
-    var headers = { "Accept": "application/vnd.github+json" };
-    var tok = getToken();
-    if (tok) headers["Authorization"] = "Bearer " + tok;
-    if (!force && state.etag) headers["If-None-Match"] = state.etag;
+    var url = LIST_URL + "?select=" + encodeURIComponent(COLUMNS) +
+      "&room_code=eq." + encodeURIComponent(state.room) +
+      "&order=created_at.asc&limit=" + LIMIT;
 
-    function done() { state.busy = false; }
-
-    fetch(API_COMMENTS, { headers: headers, cache: "no-store" })
+    fetch(url, { headers: headers(), cache: "no-store" })
       .then(function (res) {
-        if (res.status === 304) { done(); setSync(true); return null; }
-        if (res.status === 403 || res.status === 429) {
-          var reset = res.headers.get("X-RateLimit-Reset");
-          var wait = reset ? Math.max(1, Math.round((Number(reset) * 1000 - Date.now()) / 60000)) : null;
-          throw new Error("한도초과:" + (wait ? wait + "분" : "잠시"));
-        }
         if (!res.ok) throw new Error("HTTP " + res.status);
-        var et = res.headers.get("ETag");
-        if (et) state.etag = et;
         return res.json();
       })
       .then(function (json) {
-        if (!json) return;
-        var incoming = normalize(json);
-        var prevIds = Object.keys(state.seenIds);
+        var incoming = normalize(Array.isArray(json) ? json : []);
         var newOnes = incoming.filter(function (m) { return !state.seenIds[m.id]; });
-
-        // 첫 로드가 아닐 때만 '놓친 대화' 계산
         var isFirst = state.lastSync === null;
-        state.comments = incoming;
+
+        // 아직 전송 중인 내 글은 서버 목록 사이에 끼워 둔다
+        var pend = state.messages.filter(function (m) { return m.pending || m.failed; });
+
+        state.messages = incoming.concat(pend);
         state.lastSync = Date.now();
         state.seenIds = {};
         incoming.forEach(function (m) { state.seenIds[m.id] = 1; });
 
         if (!isFirst && newOnes.length && !state.atBottom) showNew(newOnes.length);
-        else if (!isFirst && newOnes.length) { /* 아래에 있으면 그냥 따라감 */ }
 
-        lsSet(LS_CACHE, JSON.stringify({ at: Date.now(), list: json }));
+        lsSet(LS_CACHE, JSON.stringify({ at: Date.now(), room: state.room, list: json }));
         render();
         setSync(true);
-        done();
+        state.busy = false;
       })
       .catch(function (err) {
-        done();
-        var m = String(err && err.message || err);
-        if (m.indexOf("한도초과:") === 0) {
-          setSync(false);
-          toast("GitHub 읽기 한도 초과 · " + m.split(":")[1] + " 뒤 자동 재시도");
-          setTimeout(function () { load(true); }, 300000);
-        } else {
-          setSync(false);
-          if (!state.lastSync) {
-            listEl.textContent = "";
-            var e2 = document.createElement("div");
-            e2.className = "empty";
-            e2.innerHTML = "<b>대화를 불러오지 못했습니다</b>";
-            var p2 = document.createElement("div");
-            p2.textContent = m + " · 새로고침을 눌러 다시 시도해 주세요.";
-            e2.appendChild(p2);
-            listEl.appendChild(e2);
-          } else {
-            toast("새로고침 실패: " + m);
-          }
+        state.busy = false;
+        setSync(false);
+        var m = String((err && err.message) || err);
+        if (state.lastSync === null) {
+          listEl.textContent = "";
+          var e2 = document.createElement("div");
+          e2.className = "empty";
+          var b2 = document.createElement("b");
+          b2.textContent = "대화를 불러오지 못했습니다";
+          var p2 = document.createElement("div");
+          p2.textContent = m + " · 새로고침을 눌러 다시 시도해 주세요.";
+          e2.appendChild(b2); e2.appendChild(p2);
+          listEl.appendChild(e2);
         }
+        showBanner(
+          "Supabase에 연결하지 못했습니다 (" + m + "). 7일 이상 사용이 없으면 무료 프로젝트가 절전 상태가 되어 첫 연결이 늦을 수 있어요. " +
+          "<a href=\"" + DASHBOARD + "\" target=\"_blank\" rel=\"noopener\">프로젝트 열기 ↗</a>"
+        );
       });
   }
 
   function showNew(n) {
-    var b = $("newBadge");
     $("newCount").textContent = String(n);
-    b.classList.remove("hide");
+    $("newBadge").classList.remove("hide");
     $("jump").classList.add("show");
   }
   function clearNew() {
@@ -713,78 +858,138 @@
   }
 
   /* ───────── 보내기 ───────── */
-  function setBusyUI(b) {
-    sendBtn.disabled = b;
-  }
-
-  function postComment(text) {
-    var tok = getToken();
-    if (!tok) { openSettings(); toast("먼저 설정에서 GitHub 토큰을 넣어 주세요"); return; }
+  function postMessage(text) {
     var nick = getNick();
-    if (!text) return;
+    if (!nick) {
+      openGate();
+      toast("먼저 닉네임을 골라 주세요 (쓴 글은 그대로 두었습니다)");
+      return;
+    }
 
-    // 낙관적 표시
     var temp = {
       id: "tmp-" + Date.now(),
       name: nick,
-      login: "",
+      badge: styleFor(nick).badge || "",
       text: text,
       createdAt: new Date().toISOString(),
-      url: "",
-      reactions: 0
+      pending: true
     };
-    state.comments.push(temp);
+    state.messages.push(temp);
     state.atBottom = true;
     render();
-    var rows = listEl.querySelectorAll(".msg .bubble");
-    var lastBubble = rows.length ? rows[rows.length - 1] : null;
-    if (lastBubble) lastBubble.classList.add("pending");
     scrollBottom(true);
-    setBusyUI(true);
+    sendBtn.disabled = true;
+    state.sending = true;
 
-    fetch(API_POST, {
+    fetch(LIST_URL, {
       method: "POST",
-      headers: {
-        "Accept": "application/vnd.github+json",
-        "Authorization": "Bearer " + tok,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({ body: "[" + nick + "] " + text })
+      headers: headers({ "Content-Type": "application/json", "Prefer": "return=representation" }),
+      body: JSON.stringify({
+        room_code: state.room,
+        sender: nick,
+        badge: temp.badge,
+        content: text
+      })
     })
       .then(function (res) {
-        if (res.status === 401) throw new Error("토큰이 유효하지 않습니다. 설정에서 다시 넣어 주세요.");
-        if (res.status === 403) throw new Error("권한 부족 · 토큰에 Issues 쓰기(public_repo) 권한이 필요합니다.");
-        if (res.status === 410) throw new Error("Issue #1 이 닫혀 있습니다.");
-        if (!res.ok) throw new Error("전송 실패 (HTTP " + res.status + ")");
+        if (!res.ok) {
+          return res.text().then(function (t) {
+            var msg = "전송 실패 (HTTP " + res.status + ")";
+            try {
+              var j = JSON.parse(t);
+              if (j && j.message) msg += " · " + j.message;
+            } catch (e) {}
+            throw new Error(msg);
+          });
+        }
         return res.json();
       })
       .then(function () {
-        setBusyUI(false);
-        state.etag = null;
+        state.sending = false;
+        sendBtn.disabled = false;
+        state.messages = state.messages.filter(function (m) { return m.id !== temp.id; });
         load(true);
         toast("보냈습니다");
       })
       .catch(function (err) {
-        setBusyUI(false);
-        state.comments = state.comments.filter(function (m) { return m.id !== temp.id; });
+        state.sending = false;
+        sendBtn.disabled = false;
+        temp.pending = false;
+        temp.failed = true;
         render();
-        toast(String(err && err.message || err));
+        toast(String((err && err.message) || err));
       });
   }
 
+  /* ───────── 닉네임 프리셋 ───────── */
+  function buildChips(boxId, inputId, onPick) {
+    var box = $(boxId);
+    box.textContent = "";
+    PRESETS.forEach(function (name) {
+      var b = document.createElement("button");
+      b.type = "button";
+      b.className = "chip";
+      b.textContent = styleFor(name).emoji + " " + name;
+      b.addEventListener("click", function () {
+        $(inputId).value = name;
+        Array.prototype.forEach.call(box.children, function (c) { c.classList.remove("on"); });
+        b.classList.add("on");
+        if (onPick) onPick(name);
+      });
+      box.appendChild(b);
+    });
+  }
+  function markChip(boxId, value) {
+    Array.prototype.forEach.call($(boxId).children, function (c) {
+      c.classList.toggle("on", c.textContent.replace(/^\S+\s/, "") === value);
+    });
+  }
+
+  /* ───────── 입장 게이트 ───────── */
+  function openGate() {
+    $("gateNick").value = getNick();
+    $("gateRoom").value = getRoom();
+    buildChips("gateChips", "gateNick", null);
+    markChip("gateChips", getNick());
+    $("gateSheet").classList.add("show");
+  }
+  function closeGate() { $("gateSheet").classList.remove("show"); }
+
+  $("btnEnter").addEventListener("click", function () {
+    var nick = $("gateNick").value.trim();
+    if (!nick) { toast("닉네임을 골라 주세요"); $("gateNick").focus(); return; }
+    if (nick.length > 30) nick = nick.slice(0, 30);
+    var room = ($("gateRoom").value.trim() || DEFAULT_ROOM).replace(/\s+/g, "-");
+    if (room.length > 40) room = room.slice(0, 40);
+    setNick(nick);
+    var roomChanged = room !== state.room;
+    setRoom(room);
+    if (roomChanged) {
+      state.room = room;
+      state.messages = [];
+      state.lastSync = null;
+      state.seenIds = {};
+      clearNew();
+      render();
+      load(true);
+    } else {
+      load(true);
+    }
+    closeGate();
+    render();
+    toast(nick + "(으)로 입장했습니다");
+  });
+  $("gateNick").addEventListener("keydown", function (e) {
+    if (e.key === "Enter") { e.preventDefault(); $("btnEnter").click(); }
+  });
+
   /* ───────── 설정 시트 ───────── */
   function openSettings() {
-    $("nickInput").value = getNick();
-    $("tokenInput").value = "";
-    var ok = $("tokenOk");
-    if (getToken()) {
-      ok.classList.add("show");
-      ok.textContent = "✅ 토큰이 저장되어 있습니다. 이 화면에서 바로 글을 쓸 수 있어요.";
-      $("tokenInput").placeholder = "저장됨 — 바꾸려면 새 토큰을 입력";
-    } else {
-      ok.classList.remove("show");
-      $("tokenInput").placeholder = "ghp_… 또는 github_pat_…";
-    }
+    $("setNick").value = getNick();
+    $("setRoom").value = state.room;
+    buildChips("setChips", "setNick", null);
+    markChip("setChips", getNick());
+    $("setOk").classList.remove("show");
     $("settingsSheet").classList.add("show");
   }
   function closeSettings() { $("settingsSheet").classList.remove("show"); }
@@ -795,45 +1000,45 @@
     if (e.target === $("settingsSheet")) closeSettings();
   });
 
-  $("btnSaveToken").addEventListener("click", function () {
-    var nick = $("nickInput").value.trim() || "방장";
-    lsSet(LS_NICK, nick);
-    var t = $("tokenInput").value.trim();
-    var ok = $("tokenOk");
-    if (!t) {
-      ok.classList.add("show");
-      ok.textContent = "✅ 표시 이름을 '" + nick + "'(으)로 저장했습니다. (토큰은 그대로 유지)";
-      state.etag = null;
+  $("btnSaveSettings").addEventListener("click", function () {
+    var nick = $("setNick").value.trim() || "방장";
+    if (nick.length > 30) nick = nick.slice(0, 30);
+    var room = ($("setRoom").value.trim() || DEFAULT_ROOM).replace(/\s+/g, "-");
+    if (room.length > 40) room = room.slice(0, 40);
+    setNick(nick);
+    var ok = $("setOk");
+    var roomChanged = room !== state.room;
+    if (roomChanged) {
+      setRoom(room);
+      state.room = room;
+      state.messages = [];
+      state.lastSync = null;
+      state.seenIds = {};
+      clearNew();
+      render();
       load(true);
-      return;
+    } else {
+      load(true);
     }
+    render();
     ok.classList.add("show");
-    ok.textContent = "토큰 확인 중…";
-    fetch(API_USER, { headers: { "Accept": "application/vnd.github+json", "Authorization": "Bearer " + t } })
-      .then(function (res) {
-        if (!res.ok) throw new Error("토큰이 유효하지 않습니다 (HTTP " + res.status + ")");
-        return res.json();
-      })
-      .then(function (u) {
-        lsSet(LS_TOKEN, t);
-        $("tokenInput").value = "";
-        state.etag = null;
-        ok.textContent = "✅ @" + u.login + " 토큰 저장 완료. 이제 화면에서 바로 글을 쓸 수 있어요.";
-        load(true);
-      })
-      .catch(function (err) {
-        ok.textContent = "❌ " + String(err && err.message || err);
-      });
+    ok.textContent = "✅ 저장했습니다 · 닉네임 " + nick + " / 방 " + room;
   });
 
-  $("btnClearToken").addEventListener("click", function () {
-    lsDel(LS_TOKEN);
-    var ok = $("tokenOk");
-    ok.classList.add("show");
-    ok.textContent = "토큰을 삭제했습니다. 이제 GitHub에서 직접 글을 쓰거나, [GitHub에서 바로 글쓰기]를 이용해 주세요.";
-    state.etag = null;
-    load(true);
-  });
+  function inviteUrl() {
+    var base = location.origin + location.pathname;
+    return state.room === DEFAULT_ROOM ? base : base + "?room=" + encodeURIComponent(state.room);
+  }
+  function copyInvite() {
+    var link = inviteUrl();
+    function done() { toast("초대 링크를 복사했습니다 · " + link); }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(link).then(done).catch(function () { toast(link); });
+    } else {
+      toast(link);
+    }
+  }
+  $("btnCopyInvite").addEventListener("click", copyInvite);
 
   /* ───────── 입력창 ───────── */
   function autosize() {
@@ -858,19 +1063,19 @@
   function submit() {
     var v = inputEl.value.replace(/\s+$/, "");
     if (!v.trim()) return;
+    if (v.length > 2000) v = v.slice(0, 2000);
     hideMentions();
-    if (!getToken()) {           // 토큰이 없으면 쓴 글을 지우지 않고 설정을 연다
-      openSettings();
-      toast("먼저 설정에서 GitHub 토큰을 넣어 주세요 · 쓴 글은 그대로 두었습니다");
+    if (!getNick()) {
+      openGate();
+      toast("먼저 닉네임을 골라 주세요 · 쓴 글은 그대로 두었습니다");
       return;
     }
     inputEl.value = "";
     autosize();
-    postComment(v);
+    postMessage(v);
   }
 
   $("btnRefresh").addEventListener("click", function () {
-    state.etag = null;
     clearNew();
     state.atBottom = true;
     load(true);
@@ -880,8 +1085,8 @@
   /* 멘션 */
   function participantNames() {
     var set = {};
-    state.comments.forEach(function (m) { set[m.name] = 1; });
-    ["피클", "키링", "큐", "부이"].forEach(function (n) { set[n] = 1; });
+    state.messages.forEach(function (m) { set[m.name] = 1; });
+    PRESETS.forEach(function (n) { set[n] = 1; });
     return Object.keys(set);
   }
   function maybeMention() {
@@ -910,9 +1115,7 @@
 
   /* + 버튼 */
   $("btnPlus").addEventListener("click", function () {
-    var win = window.open(WEB_POST, "_blank", "noopener");
-    if (!win) toast("팝업이 막혔어요 · 주소창에 github.com/butcherkorea/Leebutcher/issues/1 을 입력해 주세요");
-    else toast("GitHub 글쓰기 화면을 열었습니다");
+    toast("사진·파일은 링크로 붙여넣으면 대화에 그대로 남습니다");
   });
 
   /* 이모지 */
@@ -940,14 +1143,10 @@
   document.querySelectorAll(".tab").forEach(function (btn) {
     btn.addEventListener("click", function () {
       var t = btn.getAttribute("data-tab");
-      if (t === "github") { window.open(WEB_ISSUE, "_blank", "noopener"); return; }
-      if (t === "file") {
-        toast("파일은 GitHub Issue에 끌어다 놓으면 첨부됩니다");
-        window.open(WEB_ISSUE, "_blank", "noopener");
-        return;
-      }
+      if (t === "invite") { copyInvite(); return; }
+      if (t === "db") { window.open(DASHBOARD, "_blank", "noopener"); return; }
       if (t === "poll") {
-        inputEl.value = "@ 피클 @ 키링 — 오늘 뭐부터 할까? (1) 부업 정산 (2) 블로그 글 (3) 숏폼 ";
+        inputEl.value = "@피클 @키링 — 오늘 뭐부터 할까? (1) 부업 정산 (2) 블로그 글 (3) 숏폼 ";
         autosize(); inputEl.focus();
         return;
       }
@@ -969,6 +1168,41 @@
     toast("Ctrl+F(Mac: ⌘F)로 대화 내용을 찾을 수 있어요");
   });
 
+  /* 배너 닫기 */
+  $("btnBannerX").addEventListener("click", hideBanner);
+
+  /* 호출 알림 → 그 호출로 이동 */
+  $("callBadge").addEventListener("click", function (e) {
+    e.preventDefault();
+    if (!callFirstId) return;
+    var row = listEl.querySelector('[data-mid="' + callFirstId + '"]');
+    if (row) {
+      row.scrollIntoView({ behavior: "smooth", block: "center" });
+      state.atBottom = false;
+      toast("나를 부른 글 " + $("callCount").textContent + "건 · 노란 테두리 글에 답하면 알림이 사라집니다");
+    }
+  });
+
+  /* 빠른 호출 칩 (@피클 @키링 @부이 @큐 @전체) */
+  (function buildCallChips() {
+    var strip = $("callStrip");
+    MENTION_NAMES.forEach(function (n) {
+      var b = document.createElement("button");
+      b.type = "button";
+      b.className = "callchip" + (n === "전체" ? " all" : "");
+      b.textContent = (n === "전체" ? "📣 @전체" : "🔔 @" + n);
+      b.addEventListener("click", function () {
+        var v = inputEl.value.replace(/^\s+/, "");
+        inputEl.value = "@" + n + " " + v;
+        autosize();
+        hideMentions();
+        inputEl.focus();
+        try { inputEl.setSelectionRange(inputEl.value.length, inputEl.value.length); } catch (err) {}
+      });
+      strip.appendChild(b);
+    });
+  })();
+
   /* 스크롤 위치 감지 */
   listEl.addEventListener("scroll", function () {
     var gap = listEl.scrollHeight - listEl.scrollTop - listEl.clientHeight;
@@ -987,14 +1221,13 @@
     scrollBottom(true);
   });
 
-  /* ───────── 폴링 ───────── */
+  /* ───────── 폴링 (5초) ───────── */
   var timer = null;
   function schedule() {
     clearTimeout(timer);
     var ms = document.hidden ? POLL_MS_HIDDEN : POLL_MS;
     timer = setTimeout(function () {
-      if (orderedVisible()) load(false);
-      else load(false);
+      load(false);
       schedule();
     }, ms);
   }
@@ -1003,10 +1236,13 @@
   });
 
   /* ───────── 시작 ───────── */
-  var hadCache = loadCache();
+  setRoom(state.room);
+  setNick(getNick());
+  var hadCache = clearCacheFor(state.room);
   if (!hadCache) render();
   load(true);
   schedule();
+  if (!getNick()) openGate();
 })();
 </script>
 </body>
