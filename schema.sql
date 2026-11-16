@@ -34,3 +34,59 @@ grant usage, select on all sequences in schema public to anon, authenticated;
 -- 실시간 구독(Realtime postgres_changes)을 위해 테이블을 발행 대상에 추가
 -- (이 줄이 없으면 새로고침 전까지 새 글이 안 보입니다 → 화면은 2초 폴링으로만 동작)
 alter publication supabase_realtime add table public.chat_messages;
+
+
+-- ─────────────────────────────────────────────────────────────────────────────
+-- 파일 주고받기 · Supabase Storage (2026-11-16 적용됨)
+-- 버킷 `chat-files`: Public(공개 읽기), 파일당 50MB, MIME 제한 없음
+-- 아래 SQL은 대시보드에서 만든 것과 같은 내용이다(새 프로젝트를 다시 만들 때 사용).
+-- ─────────────────────────────────────────────────────────────────────────────
+
+insert into storage.buckets (id, name, public, file_size_limit)
+values ('chat-files', 'chat-files', true, 52428800)
+on conflict (id) do update
+  set public = true, file_size_limit = 52428800;
+
+drop policy if exists "chat files public access" on storage.objects;
+create policy "chat files public access" on storage.objects
+  for select to public using (bucket_id = 'chat-files');
+
+drop policy if exists "chat files public upload" on storage.objects;
+create policy "chat files public upload" on storage.objects
+  for insert to public with check (bucket_id = 'chat-files');
+
+drop policy if exists "chat files public delete" on storage.objects;
+create policy "chat files public delete" on storage.objects
+  for delete to public using (bucket_id = 'chat-files');
+
+
+-- ─────────────────────────────────────────────────────────────────────────────
+-- 파일 메시지 저장 방식 (테이블 스키마 변경 없음)
+-- 파일을 올리면 chat_messages.content 에 아래 형식으로 저장한다.
+--   ⚡FILE⚡{"u":"https://.../storage/v1/object/public/chat-files/<방>/<파일>","n":"원래이름.pdf","s":12345,"t":"application/pdf"}
+-- content는 계속 1~2000자 텍스트라 기존 RLS 정책이 그대로 동작하고, 화면(index.html)이
+-- 이 접두사를 보고 이미지 미리보기 / 파일 카드 + 다운로드 버튼으로 그린다.
+-- 파일 본문은 Storage(chat-files 버킷, 1GB 무료)에 있고, 대화에는 주소·이름·용량만 남는다.
+--
+-- [선택] 나중에 파일 메타데이터를 별도 컬럼으로 분리하고 싶다면 SQL Editor에서 1회 실행:
+--   alter table public.chat_messages
+--     add column if not exists file_url  text,
+--     add column if not exists file_name text,
+--     add column if not exists file_size bigint,
+--     add column if not exists file_type text;
+--   drop policy if exists "Allow anon insert" on public.chat_messages;
+--   create policy "Allow anon insert" on public.chat_messages
+--     for insert to anon, authenticated with check (
+--       char_length(content) <= 2000
+--       and (char_length(content) > 0 or file_url is not null)
+--       and char_length(sender) between 1 and 30
+--       and char_length(room_code) between 1 and 40
+--     );
+--   -- 화면(index.html)도 COLUMNS와 postMessage를 file_* 컬럼 방식으로 바꿔야 한다.
+--   -- 2026-11-16 기준 대시보드 DB 쓰기 경로가 세션 만료로 막혀 있어 보류했다.
+--
+-- [선택] 말풍선까지 지우는 삭제(용량 회수는 Storage 삭제로 이미 동작):
+--   create policy "Allow anon delete files" on public.chat_messages
+--     for delete to anon, authenticated using (content like '⚡FILE⚡%');
+--   -- 지금은 DELETE 정책이 없어 화면의 삭제 버튼은 Storage 파일만 지우고
+--   -- 말풍선은 "삭제됨"으로 표시한다(이 기기 기준).

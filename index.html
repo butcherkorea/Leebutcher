@@ -172,7 +172,7 @@
 
   /* ── tabs ── */
   .tabs{
-    flex:0 0 auto; display:grid; grid-template-columns:repeat(5,1fr);
+    flex:0 0 auto; display:grid; grid-template-columns:repeat(6,1fr);
     border-top:1px solid var(--line); background:#f7fbfa;
     padding:6px 4px calc(6px + env(safe-area-inset-bottom));
   }
@@ -266,6 +266,66 @@
     background:#fdf7e4; border-bottom:1px solid #f2e6c2;
   }
 
+  /* ── 파일 첨부 ── */
+  .attach{display:flex; flex-direction:column; gap:6px; margin-bottom:0}
+  .attach + .atxt{margin-top:7px}
+  .attach-img{
+    display:block; max-width:100%; max-height:280px; border-radius:12px;
+    border:1px solid var(--line); cursor:zoom-in; background:#f3f8f7;
+  }
+  .filecard{
+    display:flex; align-items:center; gap:9px; padding:9px 11px; border:1px solid #dbe7e4;
+    border-radius:12px; background:#f7fbfa; text-decoration:none; color:inherit; min-width:0;
+  }
+  .filecard:hover{background:#eef7f4}
+  .filecard .fi{
+    flex:0 0 auto; width:34px; height:34px; border-radius:10px; display:grid; place-items:center;
+    background:#e3f0ec; font-size:16px;
+  }
+  .filecard .fmeta{min-width:0; flex:1}
+  .filecard .fn{font-size:13px; font-weight:700; color:#25443d; word-break:break-all; line-height:1.35}
+  .filecard .fs{font-size:11px; color:#8ea5a0}
+  .filecard .fdl{flex:0 0 auto; font-size:11.5px; font-weight:800; color:#2f7a68}
+  .bubble .upload{font-size:12.5px; color:#6d8581}
+  .filebtn{
+    width:34px; height:36px; flex:0 0 auto; border:0; background:transparent; font-size:18px;
+    cursor:pointer; border-radius:50%; color:#8aa5a0; padding:0; line-height:1;
+  }
+  .filebtn:hover{background:#f0f6f4}
+  .dropzone{
+    position:fixed; inset:0; z-index:58; display:none; place-items:center;
+    background:rgba(24,44,40,.42); backdrop-filter:blur(1.5px);
+  }
+  .dropzone.show{display:grid}
+  .dropzone .box{
+    border:2px dashed #fff; color:#fff; padding:26px 30px; border-radius:20px;
+    text-align:center; font-weight:800; font-size:15px; line-height:1.6;
+  }
+  .dropzone .box small{display:block; font-weight:600; font-size:12px; opacity:.9; margin-top:4px}
+  .filesheet .sum{
+    display:flex; align-items:center; gap:8px; padding:10px 12px; margin-bottom:10px;
+    background:#f2f9f7; border:1px solid #d6eae3; border-radius:12px; font-size:12.5px; color:#2c6b57;
+  }
+  .filesheet .sum b{font-weight:800}
+  .filesheet .frow{
+    display:flex; align-items:center; gap:10px; padding:10px 2px; border-bottom:1px solid #eef4f2;
+  }
+  .filesheet .frow:last-child{border-bottom:0}
+  .filesheet .frow .fi{
+    flex:0 0 auto; width:36px; height:36px; border-radius:11px; display:grid; place-items:center;
+    background:#e3f0ec; font-size:17px;
+  }
+  .filesheet .frow .fmeta{flex:1; min-width:0}
+  .filesheet .frow .fn{font-size:13px; font-weight:700; color:#25443d; word-break:break-all}
+  .filesheet .frow .fs{font-size:11px; color:#8ea5a0}
+  .filesheet .frow .fbtns{display:flex; gap:4px; flex:0 0 auto}
+  .filesheet .frow .fbtns a, .filesheet .frow .fbtns button{
+    border:1px solid #dbe7e4; background:#fff; color:#2f6f5e; font:inherit; font-size:11.5px;
+    font-weight:800; padding:6px 9px; border-radius:9px; cursor:pointer; text-decoration:none;
+  }
+  .filesheet .frow .fbtns button.del{color:#b5453f; border-color:#f0d3d0}
+  .filesheet .none{text-align:center; color:#7e9691; font-size:13px; padding:22px 10px}
+
   /* ── toast ── */
   .toast{
     position:fixed; left:50%; bottom:96px; transform:translateX(-50%) translateY(14px);
@@ -311,7 +371,7 @@
     <a class="newbadge hide" id="newBadge" href="#">놓친 대화 <b id="newCount">0</b>개 ↗</a>
   </div>
 
-  <div class="tipstrip">💡 @피클 @키링 @큐 @인스팅트 로 부른 비서만 응답합니다 (사용량 절약)</div>
+  <div class="tipstrip">💡 @피클 @키링 @큐 @인스팅트 로 부른 비서만 응답합니다 (사용량 절약) · 📎 로 파일·이미지 주고받기(50MB까지)</div>
 
   <div class="banner" id="banner">
     <span id="bannerText"></span>
@@ -325,12 +385,14 @@
   <div class="callstrip" id="callStrip"></div>
 
   <form class="composer" id="composer" autocomplete="off">
-    <button type="button" class="plus" id="btnPlus" aria-label="더보기">+</button>
-    <textarea id="input" rows="1" placeholder="메시지를 입력하세요. @이름으로 멘션할 수 있습니다" aria-label="메시지 입력"></textarea>
+    <button type="button" class="plus" id="btnPlus" aria-label="파일 첨부">📎</button>
+    <textarea id="input" rows="1" placeholder="메시지를 입력하세요. @이름으로 멘션, 📎로 파일(50MB까지)" aria-label="메시지 입력"></textarea>
     <button type="button" class="emoji" id="btnEmoji" aria-label="이모지">☺</button>
     <button type="submit" class="send" id="btnSend" aria-label="보내기">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h14"/><path d="M12 5l7 7-7 7"/></svg>
     </button>
+    <input type="file" id="fileInput" multiple style="display:none"
+           accept=".txt,.md,.html,.htm,.css,.js,.json,.csv,.pdf,.zip,.png,.jpg,.jpeg,.gif,.webp,.hwp,.hwpx,.doc,.docx,.xls,.xlsx,.ppt,.pptx,image/*,text/*">
   </form>
 
   <nav class="tabs">
@@ -346,6 +408,10 @@
       <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l2-4 3 8 2-4h7"/></svg>
       끝말잇기
     </button>
+    <button class="tab" data-tab="files">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M21.4 11.1l-8.6 8.6a5.5 5.5 0 0 1-7.8-7.8l8.6-8.6a3.7 3.7 0 0 1 5.2 5.2l-8.6 8.6a1.8 1.8 0 0 1-2.6-2.6l7.9-7.9"/></svg>
+      파일
+    </button>
     <button class="tab" data-tab="invite">
       <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6"/><path d="M22 11h-6"/></svg>
       초대
@@ -357,6 +423,10 @@
   </nav>
 
   <button class="jump" id="jump">↓ 새 메시지</button>
+</div>
+
+<div class="dropzone" id="dropzone">
+  <div class="box">📎 여기에 파일을 놓으면 바로 올라갑니다<small>파일당 최대 50MB · 이미지·문서·압축 모두 가능</small></div>
 </div>
 
 <!-- 첫 입장: 닉네임만 고르면 끝 -->
@@ -424,6 +494,21 @@
   </div>
 </div>
 
+<!-- 파일 탭 -->
+<div class="sheet filesheet" id="fileSheet" role="dialog" aria-modal="true" aria-labelledby="fileTitle">
+  <div class="panel">
+    <h2 id="fileTitle">📎 이 방의 파일</h2>
+    <p class="desc">단톡방에 올린 파일을 모아 봅니다. 열기·다운로드로 받고, <b>삭제</b>를 누르면 저장소에서도 지워져 1GB 용량이 빕니다.</p>
+    <div class="sum" id="fileSum">불러오는 중…</div>
+    <div id="fileList"></div>
+    <div class="row" style="margin-top:12px">
+      <button class="btn primary" id="btnFileUpload">📎 파일 올리기</button>
+      <button class="btn" id="btnFileClose">닫기</button>
+    </div>
+    <p class="hint">파일은 Supabase Storage 무료 버킷 <code>chat-files</code>(1GB, 파일당 50MB)에 저장됩니다. 예전 파일을 지우면 그만큼 용량이 돌아옵니다.</p>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -447,14 +532,52 @@
   var LS_NICK = "aigc.nick";
   var LS_ROOM = "aigc.room";
   var LS_CACHE = "aigc.cache.v2";
+  var LS_DELETED = "aigc.deletedFiles.v1";   // 삭제한 파일 메시지 id (이 기기에서 숨김)
 
   var LIST_URL = SUPABASE_URL + "/rest/v1/" + TABLE;
   var COLUMNS = "id,room_code,sender,badge,content,created_at";
+
+  /* ───────── 파일(첨부) 설정 ───────── */
+  var STORAGE_URL = SUPABASE_URL + "/storage/v1";
+  var BUCKET = "chat-files";
+  var FILE_MAX = 50 * 1024 * 1024;      // 파일당 50MB (무료 플랜 한도)
+  var IMG_EXT = /^(png|jpe?g|gif|webp|bmp|svg|avif)$/i;
+  /* 테이블 스키마를 바꾸지 않고 본문(content) 안에 파일 정보를 담는다.
+     예: ⚡FILE⚡{"u":"https://.../object/public/chat-files/방코드/파일","n":"이름.pdf","s":1234,"t":"application/pdf"}
+     content는 계속 1~2000자라 기존 RLS 정책 그대로 동작한다. */
+  var FILE_MARK = "⚡FILE⚡";
+
+  function parseContent(content) {
+    var s = String(content == null ? "" : content);
+    if (s.indexOf(FILE_MARK) === 0) {
+      try {
+        var o = JSON.parse(s.slice(FILE_MARK.length));
+        if (o && o.u) {
+          return {
+            text: "",
+            file: { url: String(o.u), name: String(o.n || "파일"), size: Number(o.s) || 0, type: String(o.t || "") }
+          };
+        }
+      } catch (e) {}
+    }
+    return { text: s, file: null };
+  }
 
   /* ───────── 저장소(브라우저 로컬) ───────── */
   function lsGet(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
   function lsSet(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
   function lsDel(k) { try { localStorage.removeItem(k); } catch (e) {} }
+
+  /* 삭제한 파일 메시지 기록(로컬) — 저장소에서 파일을 지운 뒤 말풍선을 뻗지 않게 표시 */
+  function deletedMap() {
+    try { return JSON.parse(lsGet(LS_DELETED) || "{}") || {}; } catch (e) { return {}; }
+  }
+  function isFileDeleted(id) { return !!deletedMap()[id]; }
+  function markFileDeleted(id) {
+    var map = deletedMap();
+    map[id] = Date.now();
+    try { lsSet(LS_DELETED, JSON.stringify(map)); } catch (e) {}
+  }
 
   function urlRoom() {
     try {
@@ -653,12 +776,20 @@
   }
 
   function normRow(r) {
+    var p = parseContent(r.content);
+    var id = String(r.id);
+    var gone = p.file ? isFileDeleted(id) : false;
     return {
-      id: String(r.id),
+      id: id,
       name: r.sender || "익명",
       badge: r.badge || "",
-      text: r.content || "",
-      createdAt: r.created_at
+      text: p.text,
+      createdAt: r.created_at,
+      fileUrl: p.file && !gone ? p.file.url : "",
+      fileName: p.file ? p.file.name : "",
+      fileSize: p.file ? p.file.size : 0,
+      fileType: p.file ? p.file.type : "",
+      fileDeleted: gone
     };
   }
 
@@ -695,7 +826,23 @@
     bub.className = "bubble" + (me && m.name === me ? " mine" : "") +
       (m.pending ? " pending" : "") + (m.failed ? " failed" : "") +
       (callIds && callIds[m.id] ? " callto" : "");
-    renderText(bub, m.text);
+    if (m.localFile) {
+      bub.appendChild(uploadBlock(m));
+    } else if (m.fileDeleted) {
+      bub.appendChild(goneBlock(m));
+    } else {
+      if (m.fileUrl) bub.appendChild(attachBlock(m));
+      if (m.text) {
+        if (m.fileUrl) {
+          var tx = document.createElement("div");
+          tx.className = "atxt";
+          renderText(tx, m.text);
+          bub.appendChild(tx);
+        } else {
+          renderText(bub, m.text);
+        }
+      }
+    }
 
     var meta = document.createElement("div");
     meta.className = "meta";
@@ -718,6 +865,143 @@
     row.appendChild(av);
     row.appendChild(col);
     return row;
+  }
+
+  /* ───────── 첨부 파일 표시 ───────── */
+  function isImageMsg(m) {
+    if (m.fileType && m.fileType.indexOf("image/") === 0) return true;
+    var ext = String(m.fileName || "").split(".").pop();
+    return IMG_EXT.test(ext || "");
+  }
+  function fmtSize(n) {
+    n = Number(n) || 0;
+    if (n < 1024) return n + " B";
+    if (n < 1024 * 1024) return (n / 1024).toFixed(1).replace(/\.0$/, "") + " KB";
+    return (n / 1024 / 1024).toFixed(1).replace(/\.0$/, "") + " MB";
+  }
+  function fileIcon(name, type) {
+    var ext = String(name || "").split(".").pop().toLowerCase();
+    if ((type && type.indexOf("image/") === 0) || IMG_EXT.test(ext)) return "🖼️";
+    if (ext === "pdf") return "📕";
+    if (ext === "zip" || ext === "7z" || ext === "rar") return "🗜️";
+    if (ext === "txt" || ext === "md" || ext === "csv") return "📄";
+    if (ext === "html" || ext === "htm" || ext === "js" || ext === "css" || ext === "json") return "🧾";
+    if (ext === "hwp" || ext === "hwpx" || ext === "doc" || ext === "docx") return "📝";
+    if (ext === "xls" || ext === "xlsx") return "📊";
+    if (ext === "ppt" || ext === "pptx") return "📽️";
+    if (/^(mp4|mov|webm|mkv)$/.test(ext)) return "🎬";
+    if (/^(mp3|wav|m4a|ogg)$/.test(ext)) return "🎵";
+    return "📎";
+  }
+  function downloadUrl(m) {
+    if (!m.fileUrl) return "#";
+    return m.fileUrl + (m.fileUrl.indexOf("?") >= 0 ? "&" : "?") +
+      "download=" + encodeURIComponent(m.fileName || "file");
+  }
+
+  function attachBlock(m) {
+    var wrap = document.createElement("div");
+    wrap.className = "attach";
+
+    if (isImageMsg(m)) {
+      var a = document.createElement("a");
+      a.href = m.fileUrl;
+      a.target = "_blank";
+      a.rel = "noopener noreferrer";
+      var img = document.createElement("img");
+      img.className = "attach-img";
+      img.src = m.fileUrl;
+      img.alt = m.fileName || "이미지";
+      img.loading = "lazy";
+      a.appendChild(img);
+      wrap.appendChild(a);
+
+      var cap = document.createElement("div");
+      cap.className = "fs";
+      cap.style.display = "flex";
+      cap.style.alignItems = "center";
+      cap.style.gap = "7px";
+      var nm = document.createElement("span");
+      nm.textContent = (m.fileName || "이미지");
+      nm.style.wordBreak = "break-all";
+      var sz = document.createElement("span");
+      sz.textContent = "· " + fmtSize(m.fileSize);
+      var dl = document.createElement("a");
+      dl.href = downloadUrl(m);
+      dl.target = "_blank";
+      dl.rel = "noopener noreferrer";
+      dl.textContent = "다운로드";
+      dl.style.fontWeight = "800";
+      dl.style.color = "#2f7a68";
+      cap.appendChild(nm); cap.appendChild(sz); cap.appendChild(dl);
+      wrap.appendChild(cap);
+      return wrap;
+    }
+
+    var card = document.createElement("a");
+    card.className = "filecard";
+    card.href = downloadUrl(m);
+    card.target = "_blank";
+    card.rel = "noopener noreferrer";
+    card.title = "다운로드";
+    var fi = document.createElement("div");
+    fi.className = "fi";
+    fi.textContent = fileIcon(m.fileName, m.fileType);
+    var meta = document.createElement("div");
+    meta.className = "fmeta";
+    var fn = document.createElement("div");
+    fn.className = "fn";
+    fn.textContent = m.fileName || "파일";
+    var fs = document.createElement("div");
+    fs.className = "fs";
+    fs.textContent = fmtSize(m.fileSize) + (m.fileType ? " · " + m.fileType : "");
+    meta.appendChild(fn); meta.appendChild(fs);
+    var fdl = document.createElement("div");
+    fdl.className = "fdl";
+    fdl.textContent = "다운로드";
+    card.appendChild(fi); card.appendChild(meta); card.appendChild(fdl);
+    wrap.appendChild(card);
+    return wrap;
+  }
+
+  function goneBlock(m) {
+    var card = document.createElement("div");
+    card.className = "filecard";
+    card.style.opacity = ".72";
+    var fi = document.createElement("div");
+    fi.className = "fi";
+    fi.textContent = "🗑️";
+    var meta = document.createElement("div");
+    meta.className = "fmeta";
+    var fn = document.createElement("div");
+    fn.className = "fn";
+    fn.textContent = m.fileName || "파일";
+    var fs = document.createElement("div");
+    fs.className = "fs";
+    fs.textContent = "삭제됨 · 저장소 용량 회수";
+    meta.appendChild(fn); meta.appendChild(fs);
+    card.appendChild(fi); card.appendChild(meta);
+    return card;
+  }
+
+  function uploadBlock(m) {
+    var card = document.createElement("div");
+    card.className = "filecard";
+    var fi = document.createElement("div");
+    fi.className = "fi";
+    fi.textContent = fileIcon(m.localFile && m.localFile.name);
+    var meta = document.createElement("div");
+    meta.className = "fmeta";
+    var fn = document.createElement("div");
+    fn.className = "fn";
+    fn.textContent = (m.localFile && m.localFile.name) || "파일";
+    var fs = document.createElement("div");
+    fs.className = "fs upload";
+    fs.setAttribute("data-pct", m.id);
+    fs.textContent = "업로드 중…";
+    meta.appendChild(fn); meta.appendChild(fs);
+    card.appendChild(fi); card.appendChild(meta);
+    return card;
   }
 
   function daySep(day) {
@@ -805,12 +1089,19 @@
     }
     if (exists) { state.seenIds[id] = 1; return false; }
 
+    var p = parseContent(rec.content);
+    var gone = p.file ? isFileDeleted(id) : false;
     var m = {
       id: id,
       name: rec.sender || "익명",
       badge: rec.badge || "",
-      text: rec.content || "",
-      createdAt: rec.created_at
+      text: p.text,
+      createdAt: rec.created_at,
+      fileUrl: p.file && !gone ? p.file.url : "",
+      fileName: p.file ? p.file.name : "",
+      fileSize: p.file ? p.file.size : 0,
+      fileType: p.file ? p.file.type : "",
+      fileDeleted: gone
     };
     var wasBottom = state.atBottom;
     state.messages.push(m);
@@ -993,7 +1284,7 @@
   }
 
   /* ───────── 보내기 ───────── */
-  function postMessage(text) {
+  function postMessage(text, file) {
     var nick = getNick();
     if (!nick) {
       openGate();
@@ -1007,7 +1298,11 @@
       badge: styleFor(nick).badge || "",
       text: text,
       createdAt: new Date().toISOString(),
-      pending: true
+      pending: true,
+      fileUrl: file ? file.url : "",
+      fileName: file ? file.name : "",
+      fileSize: file ? file.size : 0,
+      fileType: file ? file.type : ""
     };
     state.messages.push(temp);
     state.atBottom = true;
@@ -1023,7 +1318,9 @@
         room_code: state.room,
         sender: nick,
         badge: temp.badge,
-        content: text
+        content: file
+          ? FILE_MARK + JSON.stringify({ u: file.url, n: file.name, s: file.size, t: file.type })
+          : (text || "")
       })
     })
       .then(function (res) {
@@ -1268,10 +1565,224 @@
   }
   function hideMentions() { $("mentions").classList.remove("show"); }
 
-  /* + 버튼 */
-  $("btnPlus").addEventListener("click", function () {
-    toast("사진·파일은 링크로 붙여넣으면 대화에 그대로 남습니다");
+  /* ───────── 파일 올리기 ───────── */
+  var fileInput = $("fileInput");
+
+  function pickFiles() {
+    if (!getNick()) { openGate(); toast("먼저 닉네임을 골라 주세요"); return; }
+    try { fileInput.value = ""; } catch (e) {}
+    fileInput.click();
+  }
+  $("btnPlus").addEventListener("click", pickFiles);
+  fileInput.addEventListener("change", function () { handleFiles(fileInput.files); });
+
+  function safeExt(name) {
+    var ext = String(name || "").split(".").pop().toLowerCase();
+    return /^[a-z0-9]{1,8}$/.test(ext) ? ext : "";
+  }
+  function encPath(path) {
+    return path.split("/").map(encodeURIComponent).join("/");
+  }
+  function storagePath(name) {
+    var ext = safeExt(name);
+    var rnd = Math.random().toString(36).slice(2, 6);
+    return state.room + "/" + Date.now() + "-" + rnd + (ext ? "." + ext : "");
+  }
+  function publicUrlFor(path) {
+    return STORAGE_URL + "/object/public/" + BUCKET + "/" + encPath(path);
+  }
+
+  function setUploadPct(id, pct) {
+    var el = listEl.querySelector('[data-pct="' + id + '"]');
+    if (el) el.textContent = pct > 0 ? "업로드 중 " + pct + "%" : "업로드 준비 중…";
+  }
+
+  function handleFiles(fileList) {
+    if (!fileList || !fileList.length) return;
+    if (!getNick()) { openGate(); toast("먼저 닉네임을 골라 주세요"); return; }
+    Array.prototype.slice.call(fileList).forEach(function (f) { uploadAndSend(f); });
+  }
+
+  function uploadAndSend(file) {
+    if (file.size > FILE_MAX) {
+      toast(file.name + " — 50MB를 넘어 올릴 수 없습니다 (" + fmtSize(file.size) + ")");
+      return;
+    }
+    var nick = getNick();
+    var tmp = {
+      id: "tmp-file-" + Date.now() + "-" + Math.random().toString(36).slice(2, 5),
+      name: nick,
+      badge: styleFor(nick).badge || "",
+      text: "",
+      createdAt: new Date().toISOString(),
+      pending: true,
+      localFile: { name: file.name, size: file.size }
+    };
+    state.messages.push(tmp);
+    state.atBottom = true;
+    render();
+    scrollBottom(true);
+
+    var path = storagePath(file.name);
+    var xhr = new XMLHttpRequest();
+    xhr.open("POST", STORAGE_URL + "/object/" + BUCKET + "/" + encPath(path), true);
+    xhr.setRequestHeader("apikey", SUPABASE_KEY);
+    xhr.setRequestHeader("Authorization", "Bearer " + SUPABASE_KEY);
+    xhr.setRequestHeader("Content-Type", file.type || "application/octet-stream");
+    xhr.setRequestHeader("x-upsert", "false");
+    xhr.upload.onprogress = function (e) {
+      if (e.lengthComputable) setUploadPct(tmp.id, Math.round((e.loaded / e.total) * 100));
+    };
+    xhr.onload = function () {
+      state.messages = state.messages.filter(function (m) { return m.id !== tmp.id; });
+      if (xhr.status >= 200 && xhr.status < 300) {
+        postMessage("", { url: publicUrlFor(path), name: file.name, size: file.size, type: file.type || "" });
+        toast(file.name + " 올렸습니다");
+      } else {
+        var msg = "업로드 실패 (HTTP " + xhr.status + ")";
+        try {
+          var j = JSON.parse(xhr.responseText);
+          if (j && (j.message || j.error)) msg += " · " + (j.message || j.error);
+        } catch (e) {}
+        render();
+        toast(msg);
+      }
+    };
+    xhr.onerror = function () {
+      state.messages = state.messages.filter(function (m) { return m.id !== tmp.id; });
+      render();
+      toast("업로드 실패 · 네트워크 오류");
+    };
+    xhr.send(file);
+  }
+
+  /* 드래그앤드롭 */
+  var dragDepth = 0;
+  function showDrop(on) { $("dropzone").classList.toggle("show", !!on); }
+  window.addEventListener("dragenter", function (e) {
+    var types = (e.dataTransfer && e.dataTransfer.types) || [];
+    if (Array.prototype.indexOf.call(types, "Files") < 0) return;
+    dragDepth++;
+    showDrop(true);
   });
+  window.addEventListener("dragover", function (e) { e.preventDefault(); });
+  window.addEventListener("dragleave", function () {
+    dragDepth = Math.max(0, dragDepth - 1);
+    if (!dragDepth) showDrop(false);
+  });
+  window.addEventListener("drop", function (e) {
+    e.preventDefault();
+    dragDepth = 0;
+    showDrop(false);
+    if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length) handleFiles(e.dataTransfer.files);
+  });
+
+  /* ───────── 파일 탭 (목록 · 다운로드 · 삭제) ───────── */
+  function filesInRoom() {
+    return state.messages.filter(function (m) { return !!m.fileUrl; }).slice().reverse();
+  }
+  function storagePathFromUrl(u) {
+    var marker = "/object/public/" + BUCKET + "/";
+    var i = String(u || "").indexOf(marker);
+    if (i < 0) return "";
+    return u.slice(i + marker.length).split("?")[0].split("/").map(decodeURIComponent).join("/");
+  }
+  function fileRow(m) {
+    var row = document.createElement("div");
+    row.className = "frow";
+    var fi = document.createElement("div");
+    fi.className = "fi";
+    fi.textContent = fileIcon(m.fileName, m.fileType);
+    var meta = document.createElement("div");
+    meta.className = "fmeta";
+    var fn = document.createElement("div");
+    fn.className = "fn";
+    fn.textContent = m.fileName || "파일";
+    var fs = document.createElement("div");
+    fs.className = "fs";
+    fs.textContent = fmtSize(m.fileSize) + " · " + m.name + " · " + dayLabel(m.createdAt) + " " + timeLabel(m.createdAt);
+    meta.appendChild(fn);
+    meta.appendChild(fs);
+    var btns = document.createElement("div");
+    btns.className = "fbtns";
+    var open = document.createElement("a");
+    open.href = downloadUrl(m);
+    open.target = "_blank";
+    open.rel = "noopener noreferrer";
+    open.textContent = "다운로드";
+    var del = document.createElement("button");
+    del.type = "button";
+    del.className = "del";
+    del.textContent = "삭제";
+    del.addEventListener("click", function () { deleteAttachment(m); });
+    btns.appendChild(open);
+    btns.appendChild(del);
+    row.appendChild(fi);
+    row.appendChild(meta);
+    row.appendChild(btns);
+    return row;
+  }
+
+  function renderFileSheet() {
+    var box = $("fileList");
+    var sum = $("fileSum");
+    box.textContent = "";
+    sum.textContent = "";
+    var files = filesInRoom();
+    var total = 0;
+    files.forEach(function (m) { total += Number(m.fileSize) || 0; });
+    var b = document.createElement("b");
+    b.textContent = "📎 파일 " + files.length + "개";
+    var t = document.createElement("span");
+    t.textContent = " · " + fmtSize(total) + " / 무료 1GB";
+    sum.appendChild(b);
+    sum.appendChild(t);
+
+    if (!files.length) {
+      var none = document.createElement("div");
+      none.className = "none";
+      none.textContent = "이 방에는 아직 파일이 없습니다. [📎 파일 올리기]로 첫 파일을 올려 보세요.";
+      box.appendChild(none);
+      return;
+    }
+    files.forEach(function (m) { box.appendChild(fileRow(m)); });
+  }
+
+  function openFileSheet() {
+    renderFileSheet();
+    $("fileSheet").classList.add("show");
+  }
+  function closeFileSheet() { $("fileSheet").classList.remove("show"); }
+  $("btnFileClose").addEventListener("click", closeFileSheet);
+  $("btnFileUpload").addEventListener("click", pickFiles);
+  $("fileSheet").addEventListener("click", function (e) {
+    if (e.target === $("fileSheet")) closeFileSheet();
+  });
+
+  function deleteAttachment(m) {
+    var ok = window.confirm("'" + (m.fileName || "파일") + "'을(를) 삭제할까요?\n저장소에서 지워 1GB 용량이 돌아옵니다. 대화의 말풍선은 기록으로 남습니다.");
+    if (!ok) return;
+    var path = storagePathFromUrl(m.fileUrl);
+    if (!path) { toast("파일 주소를 찾지 못했습니다"); return; }
+
+    fetch(STORAGE_URL + "/object/" + BUCKET + "/" + encPath(path), { method: "DELETE", headers: headers() })
+      .then(function (r) {
+        if (!r.ok) throw new Error("HTTP " + r.status);
+        return true;
+      })
+      .then(function () {
+        markFileDeleted(m.id);
+        m.fileUrl = "";
+        m.fileDeleted = true;
+        renderFileSheet();
+        render();
+        scrollBottom(false);
+        toast("파일을 지워 용량을 비웠습니다 · 말풍선은 기록으로 남습니다");
+      })
+      .catch(function (err) {
+        toast("삭제하지 못했습니다 · " + String((err && err.message) || err));
+      });
+  }
 
   /* 이모지 */
   var EMOJI = ["🥒", "🍒", "⚡", "✨", "😂", "👍", "🙏", "🔥", "💪", "🤖", "🎧", "🔑", "🛟", "✅", "📌", "🙂"];
@@ -1299,6 +1810,7 @@
     btn.addEventListener("click", function () {
       var t = btn.getAttribute("data-tab");
       if (t === "invite") { copyInvite(); return; }
+      if (t === "files") { openFileSheet(); return; }
       if (t === "db") { window.open(DASHBOARD, "_blank", "noopener"); return; }
       if (t === "poll") {
         inputEl.value = "@피클 @키링 — 오늘 뭐부터 할까? (1) 부업 정산 (2) 블로그 글 (3) 숏폼 ";
