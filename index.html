@@ -1649,9 +1649,28 @@
       }
     };
     xhr.onerror = function () {
-      state.messages = state.messages.filter(function (m) { return m.id !== tmp.id; });
-      render();
-      toast("업로드 실패 · 네트워크 오류");
+      // XHR가 막힌 환경(프록시·확장·방화벽)에서는 fetch로 한 번 더 시도
+      fetch(STORAGE_URL + "/object/" + BUCKET + "/" + encPath(path), {
+        method: "POST",
+        headers: {
+          "apikey": SUPABASE_KEY,
+          "Authorization": "Bearer " + SUPABASE_KEY,
+          "Content-Type": file.type || "application/octet-stream",
+          "x-upsert": "false"
+        },
+        body: file
+      })
+        .then(function (r) {
+          if (!r.ok) throw new Error("HTTP " + r.status);
+          state.messages = state.messages.filter(function (m) { return m.id !== tmp.id; });
+          postMessage("", { url: publicUrlFor(path), name: file.name, size: file.size, type: file.type || "" });
+          toast(file.name + " 올렸습니다");
+        })
+        .catch(function (err) {
+          state.messages = state.messages.filter(function (m) { return m.id !== tmp.id; });
+          render();
+          toast("업로드 실패 · " + String((err && err.message) || err));
+        });
     };
     xhr.send(file);
   }
