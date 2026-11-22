@@ -1243,6 +1243,24 @@
           if (!isFirst && newOnes.length && !state.atBottom) showNew((state.unread || 0) + newOnes.length);
           lsSet(LS_CACHE, JSON.stringify({ at: Date.now(), room: state.room, list: rows }));
           render();
+          // 첫 전체 로드에서는 맨 아래(최신 글)에 내려 앉힌다.
+          // 이미지가 늦게 로딩되어 높이가 늘어나도 놓치지 않도록 몇 번 더 맞춘다.
+          if (!state.pinnedOnce) {
+            state.pinnedOnce = true;
+            var lastPinTop = -1;
+            var pinBottom = function () {
+              // 사용자가 위로 올려 지난 대화를 읽기 시작했으면 방해하지 않는다
+              if (lastPinTop >= 0 && Math.abs(listEl.scrollTop - lastPinTop) > 120) return;
+              state.atBottom = true;
+              clearNew();
+              scrollBottom(false);
+              lastPinTop = listEl.scrollTop;
+            };
+            pinBottom();
+            setTimeout(pinBottom, 250);
+            setTimeout(pinBottom, 800);
+            setTimeout(pinBottom, 2000);
+          }
         }
 
         state.lastSync = Date.now();
