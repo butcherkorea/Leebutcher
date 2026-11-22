@@ -1260,6 +1260,14 @@
             setTimeout(pinBottom, 250);
             setTimeout(pinBottom, 800);
             setTimeout(pinBottom, 2000);
+            setTimeout(pinBottom, 5000);
+            // 이미지가 늦게 로딩되면 그때마다 다시 맨 아래에 붙인다
+            var imgs = listEl.querySelectorAll("img");
+            for (var ii = 0; ii < imgs.length; ii++) {
+              if (imgs[ii].complete) continue;
+              imgs[ii].addEventListener("load", pinBottom);
+              imgs[ii].addEventListener("error", pinBottom);
+            }
           }
         }
 
