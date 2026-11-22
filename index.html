@@ -1181,7 +1181,7 @@
   }
 
   /* ───────── 불러오기 ───────── */
-  /* full = 최근 LIMIT개 전체, delta = 마지막으로 본 id 이후만 */
+  /* full = 최근 LIMIT개 전체(최신부터 받아 시간순으로 되돌림), delta = 마지막으로 본 id 이후만 */
   function load(force) {
     if (state.busy) { state.reloadQueued = true; return; }
     state.busy = true;
@@ -1189,7 +1189,7 @@
     var url = LIST_URL + "?select=" + encodeURIComponent(COLUMNS) +
       "&room_code=eq." + encodeURIComponent(state.room) + (delta
         ? "&id=gt." + state.maxId + "&order=id.asc&limit=200"
-        : "&order=created_at.asc&limit=" + LIMIT);
+        : "&order=id.desc&limit=" + LIMIT);  // 최신 LIMIT개 (오래된 순으로 잘라오지 않도록 내림차순)
 
     fetch(url, { headers: headers(), cache: "no-store" })
       .then(function (res) {
@@ -1198,6 +1198,8 @@
       })
       .then(function (json) {
         var rows = Array.isArray(json) ? json : [];
+        // 내림차순으로 받은 전체 목록은 오래된 순(시간순)으로 되돌려 캐시·렌더 순서를 맞춘다
+        if (!delta) rows = rows.slice().reverse();
         var incoming = normalize(rows);
         var isFirst = state.lastSync === null;
         var newOnes = incoming.filter(function (m) { return !state.seenIds[m.id]; });
